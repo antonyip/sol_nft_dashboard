@@ -6,8 +6,6 @@ import { SWRConfig } from "swr";
 import axios from 'axios'
 import { DataGrid } from '@mui/x-data-grid';
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
 const fetcher = async (url) => {
     try {
       const res = await axios.get(url);
