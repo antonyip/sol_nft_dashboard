@@ -22,7 +22,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Image from 'next/image';
 import axios from 'axios';
 import CircularProgress from '@mui/material/CircularProgress'
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import { DateRange } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import date from 'date-and-time';
@@ -369,7 +369,7 @@ function MagicEdenPage()
               </Grid>
           </Grid>
           <br></br>
-          <DataGrid autoPageSize rowHeight={25} getRowId={(row) => row.PROJECT_NAME + row.DAILY_SALES} rows={dailyRows} columns={gridColDef}></DataGrid>
+          <DataGrid autoPageSize components={{ Toolbar: GridToolbar }} rowHeight={25} getRowId={(row) => row.PROJECT_NAME + row.DAILY_SALES} rows={dailyRows} columns={gridColDef}></DataGrid>
           </div>
     );
 
@@ -899,7 +899,7 @@ function SolSeaPage()
               </Grid>
           </Grid>
           <br></br>
-          <DataGrid autoPageSize rowHeight={25} getRowId={(row) => row.PROJECT_NAME + row.DAILY_SALES} rows={dailyRows} columns={gridColDef}></DataGrid>
+          <DataGrid autoPageSize components={{ Toolbar: GridToolbar }} rowHeight={25} getRowId={(row) => row.PROJECT_NAME + row.DAILY_SALES} rows={dailyRows} columns={gridColDef}></DataGrid>
           </div>
     );
 
@@ -920,17 +920,19 @@ function SolSeaPage()
       '#E68AC5',
       '#E6CA95',
     ]
+    console.log(last7DaysSorted)
     last7DaysSorted.forEach((element, index) => {
-      dataa[0].push(projectDatabase[projectNames[0]][last7DaysSorted[index]*1000])
-      dataa[1].push(projectDatabase[projectNames[1]][last7DaysSorted[index]*1000])
-      dataa[2].push(projectDatabase[projectNames[2]][last7DaysSorted[index]*1000])
-      //dataa[3].push(projectDatabase[projectNames[3]][last7DaysSorted[index]*1000])
-      //dataa[4].push(projectDatabase[projectNames[4]][last7DaysSorted[index]*1000])
-      //dataa[5].push(projectDatabase[projectNames[5]][last7DaysSorted[index]*1000])
-      //dataa[6].push(projectDatabase[projectNames[6]][last7DaysSorted[index]*1000])
-      //dataa[7].push(projectDatabase[projectNames[7]][last7DaysSorted[index]*1000])
-      //dataa[8].push(projectDatabase[projectNames[8]][last7DaysSorted[index]*1000])
-      //dataa[9].push(projectDatabase[projectNames[9]][last7DaysSorted[index]*1000])
+      //TODO: FIX
+      dataa[0].push(projectDatabase[projectNames[0]][last7DaysSorted[index]*1000] === undefined ? 0 : projectDatabase[projectNames[0]][last7DaysSorted[index]*1000])
+      //dataa[1].push(projectDatabase[projectNames[1]][last7DaysSorted[index]*1000] === undefined ? 0 : projectDatabase[projectNames[1]][last7DaysSorted[index]*1000])
+      //dataa[2].push(projectDatabase[projectNames[2]][last7DaysSorted[index]*1000] === undefined ? 0 : projectDatabase[projectNames[2]][last7DaysSorted[index]*1000])
+      //dataa[3].push(projectDatabase[projectNames[3]][last7DaysSorted[index]*1000] === undefined ? 0 : projectDatabase[projectNames[3]][last7DaysSorted[index]*1000])
+      //dataa[4].push(projectDatabase[projectNames[4]][last7DaysSorted[index]*1000] === undefined ? 0 : projectDatabase[projectNames[4]][last7DaysSorted[index]*1000])
+      //dataa[5].push(projectDatabase[projectNames[5]][last7DaysSorted[index]*1000] === undefined ? 0 : projectDatabase[projectNames[5]][last7DaysSorted[index]*1000])
+      //dataa[6].push(projectDatabase[projectNames[6]][last7DaysSorted[index]*1000] === undefined ? 0 : projectDatabase[projectNames[6]][last7DaysSorted[index]*1000])
+      //dataa[7].push(projectDatabase[projectNames[7]][last7DaysSorted[index]*1000] === undefined ? 0 : projectDatabase[projectNames[7]][last7DaysSorted[index]*1000])
+      //dataa[8].push(projectDatabase[projectNames[8]][last7DaysSorted[index]*1000] === undefined ? 0 : projectDatabase[projectNames[8]][last7DaysSorted[index]*1000])
+      //dataa[9].push(projectDatabase[projectNames[9]][last7DaysSorted[index]*1000] === undefined ? 0 : projectDatabase[projectNames[9]][last7DaysSorted[index]*1000])
       datees.push(new Date(element*1000).toISOString().substr(0,10));
     })
 
@@ -1429,7 +1431,7 @@ function SolartPage()
               </Grid>
           </Grid>
           <br></br>
-          <DataGrid autoPageSize rowHeight={25} getRowId={(row) => row.PROJECT_NAME + row.DAILY_SALES} rows={dailyRows} columns={gridColDef}></DataGrid>
+          <DataGrid autoPageSize components={{ Toolbar: GridToolbar }} rowHeight={25} getRowId={(row) => row.PROJECT_NAME + row.DAILY_SALES} rows={dailyRows} columns={gridColDef}></DataGrid>
           </div>
     );
 
