@@ -68,9 +68,21 @@ const AppBar = styled(MuiAppBar, {
   }),
 }));
 
+function AboutPage()
+{
+  return (<div><Card><CardHeader title="Solana NFT Dashboard"></CardHeader>
+    <CardContent>
+      <p>Bounty Description - <a target="_blank" href='https://flipsidecrypto.xyz/drops/3adspO7EM1pL89AKI5hbTD'>https://flipsidecrypto.xyz/drops/3adspO7EM1pL89AKI5hbTD</a></p>
+      <p>This dashboard shows the Sales of the NFT projects on the various Solana NFT Marketplaces. Feel free to explore the data!</p>
+      
+      <a target="_blank" href='https://flipsidecrypto.xyz'><img src="/powered.png"></img></a>
+    </CardContent>
+    </Card></div>);
+}
+
 function Pages(props) {
 
-  if(props.pageNumber === 0) {return (<div>Solana NFT Dashboard - https://flipsidecrypto.xyz/drops/3adspO7EM1pL89AKI5hbTD</div>);}
+  if(props.pageNumber === 0) {return (<div><AboutPage /></div>);}
   if(props.pageNumber === 1) {return (<div><MagicEdenPage /></div>);}
   if(props.pageNumber === 2) {return (<div><SolSeaPage /></div>);}
   if(props.pageNumber === 3) {return (<div><SolartPage /></div>);}
@@ -330,7 +342,7 @@ function MagicEdenPage()
   const chartOptions1 = generateChartOptions("Top 10 Daily Projects");
   const chartOptions2 = generatePieOptions("Total Volume Exchanged Today");
   const chartOptions3 = generatePieOptions("90 Day Highest Volume");
-  const chartOptions4 = generateChartOptions("90 Day Monthly Volume");
+  const chartOptions4 = generateChartOptions("90 Day Volume");
   const chartOptions5 = generatePieOptions("Number of NFTs Traded Over the last 90 days");
 
   var last7DaysSorted = last7DaysSorted_i.sort()
@@ -352,6 +364,9 @@ function MagicEdenPage()
 
   return (<div style={{ height: 600, width: '100%' }}>
             <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <Item><h2>MagicEden Marketplace</h2></Item>
+              </Grid>
               <Grid item xs={6}>
                 <Item><Bar options={chartOptions1} data={chartData1} height={null}/></Item>
               </Grid>
@@ -391,17 +406,19 @@ function MagicEdenPage()
       '#E6CA95',
     ]
     last7DaysSorted.forEach((element, index) => {
-      dataa[0].push(projectDatabase[projectNames[0]][last7DaysSorted[index]*1000])
-      dataa[1].push(projectDatabase[projectNames[1]][last7DaysSorted[index]*1000])
-      dataa[2].push(projectDatabase[projectNames[2]][last7DaysSorted[index]*1000])
-      dataa[3].push(projectDatabase[projectNames[3]][last7DaysSorted[index]*1000])
-      dataa[4].push(projectDatabase[projectNames[4]][last7DaysSorted[index]*1000])
-      dataa[5].push(projectDatabase[projectNames[5]][last7DaysSorted[index]*1000])
-      dataa[6].push(projectDatabase[projectNames[6]][last7DaysSorted[index]*1000])
-      dataa[7].push(projectDatabase[projectNames[7]][last7DaysSorted[index]*1000])
-      dataa[8].push(projectDatabase[projectNames[8]][last7DaysSorted[index]*1000])
-      dataa[9].push(projectDatabase[projectNames[9]][last7DaysSorted[index]*1000])
       datees.push(new Date(element*1000).toISOString().substr(0,10));
+      for (let i = 0; i < 10; i++) {
+
+        if (projectNames[i] === "") continue;
+
+        const interestedDate = last7DaysSorted[index]*1000;
+        const projectStats = projectDatabase[projectNames[i]];
+
+        if (projectStats[interestedDate] !== undefined)
+        {
+          dataa[i].push(projectStats[interestedDate]);
+        }
+      }
     })
 
     //console.log(dataa)
@@ -513,8 +530,8 @@ function MagicEdenPage()
     if (index === 1)
     {
       //Total Volume Exchanged Today
-      var limit = [0,0,0,0,0,0,0,0,0,0]
-      var limitNames = ["","","","","","","","","","",]
+      var limit = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,]
+      var limitNames = ["","","","","","","","","","","","","","","","","","","","",]
       var sum = 0;
       for (element in projectDatabase)
       {
@@ -553,9 +570,9 @@ function MagicEdenPage()
 
     if (index === 2)
     {
-      // 90 Day Monthly Volume
-      var limit = [0,0,0,0,0,0,0,0,0,0]
-      var limitNames = ["","","","","","","","","","",]
+      // 90 Day Volume
+      var limit = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,]
+      var limitNames = ["","","","","","","","","","","","","","","","","","","","",]
       var sum = 0;
       for (element in projectDatabase)
       {
@@ -595,8 +612,8 @@ function MagicEdenPage()
     if (index === 3)
     {
       // Number of NFTs Traded
-      var limit = [0,0,0,0,0,0,0,0,0,0]
-      var limitNames = ["","","","","","","","","","",]
+      var limit = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,]
+      var limitNames = ["","","","","","","","","","","","","","","","","","","","",]
       var sum = 0;
       for (element in projectDatabase)
       {
@@ -794,7 +811,8 @@ function SolSeaPage()
 
 
 
-  //console.log(latestDate);
+  console.log(latestDate);
+  console.log(uniqueDate);
   console.log(projectDatabase);
 
   var dailyRows = []
@@ -860,7 +878,7 @@ function SolSeaPage()
   const chartOptions1 = generateChartOptions("Top 10 Daily Projects");
   const chartOptions2 = generatePieOptions("Total Volume Exchanged Today");
   const chartOptions3 = generatePieOptions("90 Day Highest Volume");
-  const chartOptions4 = generateChartOptions("90 Day Monthly Volume");
+  const chartOptions4 = generateChartOptions("90 Day Volume");
   const chartOptions5 = generatePieOptions("Number of NFTs Traded Over the last 90 days");
 
   var last7DaysSorted = last7DaysSorted_i.sort()
@@ -882,6 +900,9 @@ function SolSeaPage()
 
   return (<div style={{ height: 600, width: '100%' }}>
             <Grid container spacing={2}>
+            <Grid item xs={12}>
+                <Item><h2>SolSea Marketplace</h2></Item>
+              </Grid>
               <Grid item xs={6}>
                 <Item><Bar options={chartOptions1} data={chartData1} height={null}/></Item>
               </Grid>
@@ -920,23 +941,25 @@ function SolSeaPage()
       '#E68AC5',
       '#E6CA95',
     ]
-    console.log(last7DaysSorted)
+    //console.log(projectNames)
+    //console.log(last7DaysSorted)
     last7DaysSorted.forEach((element, index) => {
-      //TODO: FIX
-      dataa[0].push(projectDatabase[projectNames[0]][last7DaysSorted[index]*1000] === undefined ? 0 : projectDatabase[projectNames[0]][last7DaysSorted[index]*1000])
-      //dataa[1].push(projectDatabase[projectNames[1]][last7DaysSorted[index]*1000] === undefined ? 0 : projectDatabase[projectNames[1]][last7DaysSorted[index]*1000])
-      //dataa[2].push(projectDatabase[projectNames[2]][last7DaysSorted[index]*1000] === undefined ? 0 : projectDatabase[projectNames[2]][last7DaysSorted[index]*1000])
-      //dataa[3].push(projectDatabase[projectNames[3]][last7DaysSorted[index]*1000] === undefined ? 0 : projectDatabase[projectNames[3]][last7DaysSorted[index]*1000])
-      //dataa[4].push(projectDatabase[projectNames[4]][last7DaysSorted[index]*1000] === undefined ? 0 : projectDatabase[projectNames[4]][last7DaysSorted[index]*1000])
-      //dataa[5].push(projectDatabase[projectNames[5]][last7DaysSorted[index]*1000] === undefined ? 0 : projectDatabase[projectNames[5]][last7DaysSorted[index]*1000])
-      //dataa[6].push(projectDatabase[projectNames[6]][last7DaysSorted[index]*1000] === undefined ? 0 : projectDatabase[projectNames[6]][last7DaysSorted[index]*1000])
-      //dataa[7].push(projectDatabase[projectNames[7]][last7DaysSorted[index]*1000] === undefined ? 0 : projectDatabase[projectNames[7]][last7DaysSorted[index]*1000])
-      //dataa[8].push(projectDatabase[projectNames[8]][last7DaysSorted[index]*1000] === undefined ? 0 : projectDatabase[projectNames[8]][last7DaysSorted[index]*1000])
-      //dataa[9].push(projectDatabase[projectNames[9]][last7DaysSorted[index]*1000] === undefined ? 0 : projectDatabase[projectNames[9]][last7DaysSorted[index]*1000])
       datees.push(new Date(element*1000).toISOString().substr(0,10));
+      for (let i = 0; i < 10; i++) {
+
+        if (projectNames[i] === "") continue;
+
+        const interestedDate = last7DaysSorted[index]*1000;
+        const projectStats = projectDatabase[projectNames[i]];
+
+        if (projectStats[interestedDate] !== undefined)
+        {
+          dataa[i].push(projectStats[interestedDate]);
+        }
+      }
     })
 
-    //console.log(dataa)
+    console.log(dataa)
     return {
       labels: datees,
       datasets: [
@@ -1045,8 +1068,8 @@ function SolSeaPage()
     if (index === 1)
     {
       //Total Volume Exchanged Today
-      var limit = [0,0,0,0,0,0,0,0,0,0]
-      var limitNames = ["","","","","","","","","","",]
+      var limit = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,]
+      var limitNames = ["","","","","","","","","","","","","","","","","","","","",]
       var sum = 0;
       for (element in projectDatabase)
       {
@@ -1085,9 +1108,9 @@ function SolSeaPage()
 
     if (index === 2)
     {
-      // 90 Day Monthly Volume
-      var limit = [0,0,0,0,0,0,0,0,0,0]
-      var limitNames = ["","","","","","","","","","",]
+      // 90 Day Volume
+      var limit = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,]
+      var limitNames = ["","","","","","","","","","","","","","","","","","","","",]
       var sum = 0;
       for (element in projectDatabase)
       {
@@ -1127,8 +1150,8 @@ function SolSeaPage()
     if (index === 3)
     {
       // Number of NFTs Traded
-      var limit = [0,0,0,0,0,0,0,0,0,0]
-      var limitNames = ["","","","","","","","","","",]
+      var limit = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,]
+      var limitNames = ["","","","","","","","","","","","","","","","","","","","",]
       var sum = 0;
       for (element in projectDatabase)
       {
@@ -1392,7 +1415,7 @@ function SolartPage()
   const chartOptions1 = generateChartOptions("Top 10 Daily Projects");
   const chartOptions2 = generatePieOptions("Total Volume Exchanged Today");
   const chartOptions3 = generatePieOptions("90 Day Highest Volume");
-  const chartOptions4 = generateChartOptions("90 Day Monthly Volume");
+  const chartOptions4 = generateChartOptions("90 Day Volume");
   const chartOptions5 = generatePieOptions("Number of NFTs Traded Over the last 90 days");
 
   var last7DaysSorted = last7DaysSorted_i.sort()
@@ -1414,6 +1437,9 @@ function SolartPage()
 
   return (<div style={{ height: 600, width: '100%' }}>
             <Grid container spacing={2}>
+            <Grid item xs={12}>
+                <Item><h2>Solanart Marketplace</h2></Item>
+              </Grid>
               <Grid item xs={6}>
                 <Item><Bar options={chartOptions1} data={chartData1} height={null}/></Item>
               </Grid>
@@ -1453,17 +1479,19 @@ function SolartPage()
       '#E6CA95',
     ]
     last7DaysSorted.forEach((element, index) => {
-      dataa[0].push(projectDatabase[projectNames[0]][last7DaysSorted[index]*1000])
-      dataa[1].push(projectDatabase[projectNames[1]][last7DaysSorted[index]*1000])
-      dataa[2].push(projectDatabase[projectNames[2]][last7DaysSorted[index]*1000])
-      dataa[3].push(projectDatabase[projectNames[3]][last7DaysSorted[index]*1000])
-      dataa[4].push(projectDatabase[projectNames[4]][last7DaysSorted[index]*1000])
-      dataa[5].push(projectDatabase[projectNames[5]][last7DaysSorted[index]*1000])
-      dataa[6].push(projectDatabase[projectNames[6]][last7DaysSorted[index]*1000])
-      dataa[7].push(projectDatabase[projectNames[7]][last7DaysSorted[index]*1000])
-      dataa[8].push(projectDatabase[projectNames[8]][last7DaysSorted[index]*1000])
-      dataa[9].push(projectDatabase[projectNames[9]][last7DaysSorted[index]*1000])
       datees.push(new Date(element*1000).toISOString().substr(0,10));
+      for (let i = 0; i < 10; i++) {
+
+        if (projectNames[i] === "") continue;
+
+        const interestedDate = last7DaysSorted[index]*1000;
+        const projectStats = projectDatabase[projectNames[i]];
+
+        if (projectStats[interestedDate] !== undefined)
+        {
+          dataa[i].push(projectStats[interestedDate]);
+        }
+      }
     })
 
     //console.log(dataa)
@@ -1575,8 +1603,8 @@ function SolartPage()
     if (index === 1)
     {
       //Total Volume Exchanged Today
-      var limit = [0,0,0,0,0,0,0,0,0,0]
-      var limitNames = ["","","","","","","","","","",]
+      var limit = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,]
+      var limitNames = ["","","","","","","","","","","","","","","","","","","","",]
       var sum = 0;
       for (element in projectDatabase)
       {
@@ -1615,9 +1643,9 @@ function SolartPage()
 
     if (index === 2)
     {
-      // 90 Day Monthly Volume
-      var limit = [0,0,0,0,0,0,0,0,0,0]
-      var limitNames = ["","","","","","","","","","",]
+      // 90 Day Volume
+      var limit = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,]
+      var limitNames = ["","","","","","","","","","","","","","","","","","","","",]
       var sum = 0;
       for (element in projectDatabase)
       {
@@ -1657,8 +1685,8 @@ function SolartPage()
     if (index === 3)
     {
       // Number of NFTs Traded
-      var limit = [0,0,0,0,0,0,0,0,0,0]
-      var limitNames = ["","","","","","","","","","",]
+      var limit = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,]
+      var limitNames = ["","","","","","","","","","","","","","","","","","","","",]
       var sum = 0;
       for (element in projectDatabase)
       {
@@ -1716,7 +1744,8 @@ function PermanentDrawerLeft() {
       <CssBaseline />
       <AppBar
         position="fixed"
-        sx={{ width: `calc(100% - ${drawerWidth}px)`, ml: `${drawerWidth}px` }}
+        //sx={{ width: `calc(100% - ${drawerWidth}px)`, ml: `${drawerWidth}px` }}
+        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
       >
         <Toolbar>
           <Typography variant="h6" noWrap component="div">
