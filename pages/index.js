@@ -19,8 +19,33 @@ import IconButton from '@mui/material/IconButton';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-//import AlarmIcon from '@mui/icons-material';
-//import Facebook from '@mui/icons-material';
+import Image from 'next/image';
+import axios from 'axios';
+import CircularProgress from '@mui/material/CircularProgress'
+import { DataGrid } from '@mui/x-data-grid';
+import { DateRange } from '@mui/icons-material';
+import Grid from '@mui/material/Grid';
+import date from 'date-and-time';
+import Paper from '@mui/material/Paper';
+
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Line, Bar } from 'react-chartjs-2';
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const drawerWidth = 240;
 
@@ -44,8 +69,9 @@ const AppBar = styled(MuiAppBar, {
 function Pages(props) {
 
   if(props.pageNumber === 0) {return (<div>Solana NFT Dashboard - https://flipsidecrypto.xyz/drops/3adspO7EM1pL89AKI5hbTD</div>);}
-  if(props.pageNumber === 1) {return (<div><RipOffFlipside /></div>);}
-
+  if(props.pageNumber === 1) {return (<div><MagicEdenPage /></div>);}
+  if(props.pageNumber === 2) {return (<div>Solsea - todo </div>);}
+  if(props.pageNumber === 3) {return (<div>Solanart - todo </div>);}
   return (
     <Typography paragraph>
       Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
@@ -64,11 +90,190 @@ function Pages(props) {
   );
 }
 
-const Mgai = '<iframe src="https://velocity-app.flipsidecrypto.com/velocity/visuals/bac22296-7b96-4122-8b4c-3e00e74543ab/1d3eb78f-f38c-45dd-85f3-7c81dca56138" width="100%" height="600"></iframe>';
-
-function RipOffFlipside() {
-  return <div dangerouslySetInnerHTML={{__html: Mgai}} />;
+function displayNiceTitle(myString)
+{
+  var rv = []
+  var toCaps = 1;
+  for (let index = 0; index < myString.length; index++) {
+    const element = myString[index];
+    if (toCaps === 1)
+    {
+      rv.push(element.toUpperCase());
+      toCaps = 0;
+    }
+    else
+    {
+      rv.push(element);
+    }
+    
+    if (element === ' ')
+    {
+      toCaps = 1;
+    }
+  }
+  return rv.join('');
 }
+
+function MagicEdenPage()
+{
+  const [data,setData] = useState("")
+  React.useEffect(() => {
+    axios.get("/api/getMagicEdenSales").then (response => {
+      setData(response);
+    }).catch (error => {
+      console.log(error);
+    })
+  },[])
+
+  if (data === "") return (<div><CircularProgress /></div>);
+
+  // manipulating the data -- start
+
+  var projectDatabase = {}
+  var latestDate = undefined
+  var latestDateMonth = undefined
+  var latestDateMonthCalc = undefined
+
+  data.data.forEach( row => {
+    var dateParsed = new Date(row.DAY_DATE)
+
+    if (latestDate === undefined || date.subtract(dateParsed,latestDate).toSeconds > 0)
+    {
+      latestDate = dateParsed;
+    }
+
+
+
+    if (projectDatabase[row.PROJECT_NAME] === undefined)
+    {
+      projectDatabase[row.PROJECT_NAME] = {}
+    }
+
+    projectDatabase[row.PROJECT_NAME][dateParsed] = row.SUM_SALES_PRICE
+    projectDatabase[row.PROJECT_NAME]['c' + dateParsed] = row.COUNT_NFT_SALES
+    
+    
+    var dateMonth = dateParsed.getFullYear() + '-' + dateParsed.getMonth().toString().padStart(2,'0')
+    var dateMonthCalc = dateParsed.getFullYear() * 12 + dateParsed.getMonth()
+    
+    if (latestDateMonthCalc === undefined || dateMonthCalc > latestDateMonthCalc)
+    {
+      latestDateMonth = dateMonth;
+      latestDateMonthCalc = dateMonthCalc
+    }
+
+    if (projectDatabase[row.PROJECT_NAME][dateMonth] === undefined)
+    {
+      projectDatabase[row.PROJECT_NAME][dateMonth] = 0;
+      projectDatabase[row.PROJECT_NAME]['c' + dateMonth] = 0;
+    }
+    projectDatabase[row.PROJECT_NAME][dateMonth] += row.SUM_SALES_PRICE;
+    projectDatabase[row.PROJECT_NAME]['c' + dateMonth] += row.COUNT_NFT_SALES
+    
+  })
+
+  console.log(latestDate);
+  console.log(projectDatabase);
+  
+  var dailyRows = []
+  for (var element in projectDatabase) {
+    var daily = projectDatabase[element][latestDate] === undefined ? 0 : Math.round(projectDatabase[element][latestDate]*100) / 100;
+    var dailyCount = projectDatabase[element]['c' + latestDate] === undefined ? 0 : Math.round(projectDatabase[element]['c' + latestDate]*100) / 100;
+    var monthlyCount = projectDatabase[element]['c' + latestDateMonth] === undefined ? 0 : projectDatabase[element]['c' + latestDateMonth];
+    var monthly = projectDatabase[element][latestDateMonth] === undefined ? 0 : Math.round(projectDatabase[element][latestDateMonth]*100) / 100
+    dailyRows.push({PROJECT_NAME:displayNiceTitle(element), DAILY_SALES:daily, MONTHLY_SALES:monthly, DAILY_COUNT:dailyCount, MONTHLY_COUNT:monthlyCount })
+  }
+
+  console.log(dailyRows);
+
+  // manipulating the data -- end
+
+  const gridColDef = [
+    { field: 'PROJECT_NAME', headerName: 'NFT Collection', width: 250 },
+    { field: 'DAILY_SALES', headerName: '24h Sales (SOL)', width: 150 },
+    { field: 'MONTHLY_SALES', headerName: '30d Sales (SOL)', width: 150 },
+    { field: 'DAILY_COUNT', headerName: '24h Sales (#)', width: 150 },
+    { field: 'MONTHLY_COUNT', headerName: '30d Sales (#)', width: 150 },
+  ];
+
+  const chartOptions = {
+    //indexAxis: 'y',
+    elements: {
+      bar: {
+        borderWidth: 2,
+      },
+    },
+    responsive: false,
+    scales: {
+      x: {
+        stacked: true,
+      },
+      y: {
+        stacked: true,
+      },
+    },
+    plugins: {
+      legend: {
+        display: false,
+        position: 'right',
+      },
+      title: {
+        display: true,
+        text: 'Daily Sales by Project',
+      },
+    },
+  };
+
+  const chartData = {
+    labels: [1,2,3,4,5],
+    datasets: [
+      {
+        label: 'Dataset 1',
+        data: [5,5,5,5,5],
+        backgroundColor: 'rgb(255, 99, 132)',
+      },
+      {
+        label: 'Dataset 2',
+        data: [5,5,5,5,5],
+        backgroundColor: 'rgb(75, 192, 192)',
+      },
+      {
+        label: 'Dataset 3',
+        data: [5,5,5,5,5],
+        backgroundColor: 'rgb(53, 162, 235)',
+      },
+    ],
+  };
+
+  const Item = styled(Paper)(({ theme }) => ({
+    backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+    ...theme.typography.body2,
+    padding: theme.spacing(1),
+    textAlign: 'center',
+    color: theme.palette.text.secondary,
+  }));
+
+  return (<div style={{ height: 600, width: '100%' }}>
+            <Grid container spacing={2}>
+              <Grid item xs={3}>
+                <Item><Bar options={chartOptions} data={chartData} height={null}/></Item>
+              </Grid>
+              <Grid item xs={3}>
+                <Item><Bar options={chartOptions} data={chartData} height={null}/></Item>
+              </Grid>
+              <Grid item xs={3}>
+                <Item><Bar options={chartOptions} data={chartData} height={null}/></Item>
+              </Grid>
+              <Grid item xs={3}>
+                <Item><Bar options={chartOptions} data={chartData} height={null}/></Item>
+              </Grid>
+          </Grid>
+          <br></br>
+          <DataGrid autoPageSize rowHeight={25} getRowId={(row) => row.PROJECT_NAME + row.DAILY_SALES} rows={dailyRows} columns={gridColDef}></DataGrid>
+          </div>
+    );
+}
+
 
 function PermanentDrawerLeft() {
   const [page, setPage] = useState(0);
@@ -82,7 +287,7 @@ function PermanentDrawerLeft() {
       >
         <Toolbar>
           <Typography variant="h6" noWrap component="div">
-            Solana Dashboard
+            Solana NFT Sales
           </Typography>
         </Toolbar>
       </AppBar>
@@ -112,24 +317,29 @@ function PermanentDrawerLeft() {
         </List>
         <Divider />
         <List>
-          {/* {['MagicEden', 'SolSea', 'Solanart'].map((text, index) => ( */}
             <ListItem button key={'MagicEden'} onClick={() => setPage(1)}>
               <ListItemIcon>
-                
+                <Image src='/meLogo.png' height={24} width={24} />
               </ListItemIcon>
               <ListItemText primary={'MagicEden'} />
             </ListItem>
             <ListItem button key={'SolSea'} onClick={() => setPage(2)}>
               <ListItemIcon>
-                I
+              <Image src='/solsea.jpg' height={24} width={24} />
               </ListItemIcon>
               <ListItemText primary={'SolSea'} />
             </ListItem>
-            <ListItem button key={'MagicEden'} onClick={() => setPage(3)}>
+            <ListItem button key={'Solanart'} onClick={() => setPage(3)}>
               <ListItemIcon>
-                I
+              <Image src='/solanart.jpeg' height={24} width={24} />
               </ListItemIcon>
-              <ListItemText primary={'MagicEden'} />
+              <ListItemText primary={'Solanart'} />
+            </ListItem>
+            <ListItem button key={'Your Next Project'} onClick={() => setPage(4)}>
+              <ListItemIcon>
+              <Image src='/opensea.png' height={24} width={24} />
+              </ListItemIcon>
+              <ListItemText primary={'Your Next Project'} />
             </ListItem>
         </List>
         <Divider />
