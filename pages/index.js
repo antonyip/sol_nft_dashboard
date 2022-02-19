@@ -36,12 +36,14 @@ import {
   Title,
   Tooltip,
   Legend,
+  ArcElement,
 } from 'chart.js';
-import { Line, Bar } from 'react-chartjs-2';
+import { Line, Bar, Doughnut } from 'react-chartjs-2';
 ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
+  ArcElement,
   Title,
   Tooltip,
   Legend
@@ -70,8 +72,8 @@ function Pages(props) {
 
   if(props.pageNumber === 0) {return (<div>Solana NFT Dashboard - https://flipsidecrypto.xyz/drops/3adspO7EM1pL89AKI5hbTD</div>);}
   if(props.pageNumber === 1) {return (<div><MagicEdenPage /></div>);}
-  if(props.pageNumber === 2) {return (<div>Solsea - todo </div>);}
-  if(props.pageNumber === 3) {return (<div>Solanart - todo </div>);}
+  if(props.pageNumber === 2) {return (<div><SolSeaPage /></div>);}
+  if(props.pageNumber === 3) {return (<div><SolartPage /></div>);}
   return (
     <Typography paragraph>
       Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
@@ -127,12 +129,68 @@ function MagicEdenPage()
 
   if (data === "") return (<div><CircularProgress /></div>);
 
+
+  function generateChartOptions(myVar) {
+    return {
+      elements: {
+        bar: {
+          borderWidth: 2,
+        },
+      },
+      responsive: true,
+      scales: {
+        x: {
+          stacked: true,
+        },
+        y: {
+          stacked: true,
+        },
+      },
+      plugins: {
+        legend: {
+          display: false,
+          position: 'right',
+        },
+        title: {
+          display: true,
+          text: myVar,
+        },
+      },
+    };
+  }
+
+  function generatePieOptions(myVar) {
+    return {
+      elements: {
+        bar: {
+          borderWidth: 2,
+        },
+      },
+      responsive: true,
+      plugins: {
+        legend: {
+          display: false,
+          position: 'right',
+        },
+        title: {
+          display: true,
+          text: myVar,
+        },
+      },
+    };
+  }
+
   // manipulating the data -- start
 
   var projectDatabase = {}
   var latestDate = undefined
   var latestDateMonth = undefined
   var latestDateMonthCalc = undefined
+
+  
+
+  var uniqueDate = {}
+  var last7DaysSorted_i = [0,0,0,0,0,0,0];
 
   data.data.forEach( row => {
     var dateParsed = new Date(row.DAY_DATE)
@@ -142,6 +200,7 @@ function MagicEdenPage()
       latestDate = dateParsed;
     }
 
+    uniqueDate[dateParsed.getTime()] = 1;
 
 
     if (projectDatabase[row.PROJECT_NAME] === undefined)
@@ -150,7 +209,9 @@ function MagicEdenPage()
     }
 
     projectDatabase[row.PROJECT_NAME][dateParsed] = row.SUM_SALES_PRICE
+    projectDatabase[row.PROJECT_NAME][dateParsed.getTime()] = row.SUM_SALES_PRICE
     projectDatabase[row.PROJECT_NAME]['c' + dateParsed] = row.COUNT_NFT_SALES
+    projectDatabase[row.PROJECT_NAME]['c' + dateParsed.getTime()] = row.COUNT_NFT_SALES
     
     
     var dateMonth = dateParsed.getFullYear() + '-' + dateParsed.getMonth().toString().padStart(2,'0')
@@ -162,88 +223,124 @@ function MagicEdenPage()
       latestDateMonthCalc = dateMonthCalc
     }
 
+    if( projectDatabase[row.PROJECT_NAME]['ts'] === undefined )
+    {
+      projectDatabase[row.PROJECT_NAME]['ts'] = 0
+      projectDatabase[row.PROJECT_NAME]['tc'] = 0
+    }
+
     if (projectDatabase[row.PROJECT_NAME][dateMonth] === undefined)
     {
       projectDatabase[row.PROJECT_NAME][dateMonth] = 0;
       projectDatabase[row.PROJECT_NAME]['c' + dateMonth] = 0;
     }
     projectDatabase[row.PROJECT_NAME][dateMonth] += row.SUM_SALES_PRICE;
-    projectDatabase[row.PROJECT_NAME]['c' + dateMonth] += row.COUNT_NFT_SALES
+    projectDatabase[row.PROJECT_NAME]['c' + dateMonth] += row.COUNT_NFT_SALES;
+    projectDatabase[row.PROJECT_NAME]['ts'] += row.SUM_SALES_PRICE;
+    projectDatabase[row.PROJECT_NAME]['tc'] += row.COUNT_NFT_SALES;
     
   })
 
-  console.log(latestDate);
-  console.log(projectDatabase);
   
+
+  for (var key in uniqueDate) {
+    var minTime = last7DaysSorted_i[0]
+    var minTimeIndex = 0;
+
+    last7DaysSorted_i.forEach((element,index) =>{
+      if (minTime > element)
+      {
+        minTime = element
+        minTimeIndex = index
+      }
+    })
+    //console.log(key);
+    var ldate = new Date(key / 1000);
+    if (ldate.getTime() > minTime)
+    {
+      last7DaysSorted_i[minTimeIndex] = ldate.getTime()
+    }
+  }
+
+
+
+  //console.log(latestDate);
+  console.log(projectDatabase);
+
   var dailyRows = []
+  var minValues = [0,0,0,0,0,0,0,0,0,0];
+  var projectNames = ["","","","","","","","","","",];
+  
   for (var element in projectDatabase) {
     var daily = projectDatabase[element][latestDate] === undefined ? 0 : Math.round(projectDatabase[element][latestDate]*100) / 100;
     var dailyCount = projectDatabase[element]['c' + latestDate] === undefined ? 0 : Math.round(projectDatabase[element]['c' + latestDate]*100) / 100;
     var monthlyCount = projectDatabase[element]['c' + latestDateMonth] === undefined ? 0 : projectDatabase[element]['c' + latestDateMonth];
     var monthly = projectDatabase[element][latestDateMonth] === undefined ? 0 : Math.round(projectDatabase[element][latestDateMonth]*100) / 100
-    dailyRows.push({PROJECT_NAME:displayNiceTitle(element), DAILY_SALES:daily, MONTHLY_SALES:monthly, DAILY_COUNT:dailyCount, MONTHLY_COUNT:monthlyCount })
-  }
+    var quartlyCount = projectDatabase[element]['tc'] === undefined ? 0 : projectDatabase[element]['tc'];
+    var quartly = projectDatabase[element]['ts'] === undefined ? 0 : Math.round(projectDatabase[element]['ts']*100) / 100
 
-  console.log(dailyRows);
+    var currentMin = 99999999
+    var minIndex = -1
+    // get the minimum from the minValues
+    minValues.forEach((element, index, array) => {
+      if ( element < currentMin )
+      {
+        currentMin = element;
+        minIndex = index;
+      }
+    })
+
+    if (projectDatabase[element][latestDate] > currentMin)
+    {
+      if (element != 'others')
+      {
+        minValues[minIndex] = projectDatabase[element][latestDate];
+        projectNames[minIndex] = element;
+      }
+    }
+
+    dailyRows.push({
+      PROJECT_NAME:displayNiceTitle(element),
+      DAILY_SALES:daily,
+      DAILY_COUNT:dailyCount,
+      MONTHLY_SALES:monthly,
+      MONTHLY_COUNT:monthlyCount,
+      QUARTLY_SALES:quartly,
+      QUARTLY_COUNT:quartlyCount,
+    })
+  }
+  
+  //console.log(minValues);
+  //console.log(projectNames);
+
+  //console.log(dailyRows);
 
   // manipulating the data -- end
 
   const gridColDef = [
     { field: 'PROJECT_NAME', headerName: 'NFT Collection', width: 250 },
-    { field: 'DAILY_SALES', headerName: '24h Sales (SOL)', width: 150 },
-    { field: 'MONTHLY_SALES', headerName: '30d Sales (SOL)', width: 150 },
-    { field: 'DAILY_COUNT', headerName: '24h Sales (#)', width: 150 },
-    { field: 'MONTHLY_COUNT', headerName: '30d Sales (#)', width: 150 },
+    { field: 'DAILY_SALES', headerName: '24h Sales (SOL)', width: 200 },
+    { field: 'DAILY_COUNT', headerName: '24h Sales (#)', width: 200 },
+    { field: 'MONTHLY_SALES', headerName: '30d Sales (SOL)', width: 200 },
+    { field: 'MONTHLY_COUNT', headerName: '30d Sales (#)', width: 200 },
+    { field: 'QUARTLY_SALES', headerName: '90d Sales (SOL)', width: 200 },
+    { field: 'QUARTLY_COUNT', headerName: '90d Sales (#)', width: 200 },
   ];
 
-  const chartOptions = {
-    //indexAxis: 'y',
-    elements: {
-      bar: {
-        borderWidth: 2,
-      },
-    },
-    responsive: false,
-    scales: {
-      x: {
-        stacked: true,
-      },
-      y: {
-        stacked: true,
-      },
-    },
-    plugins: {
-      legend: {
-        display: false,
-        position: 'right',
-      },
-      title: {
-        display: true,
-        text: 'Daily Sales by Project',
-      },
-    },
-  };
+  const chartOptions1 = generateChartOptions("Top 10 Daily Projects");
+  const chartOptions2 = generatePieOptions("Total Volume Exchanged Today");
+  const chartOptions3 = generatePieOptions("90 Day Highest Volume");
+  const chartOptions4 = generateChartOptions("90 Day Monthly Volume");
+  const chartOptions5 = generatePieOptions("Number of NFTs Traded Over the last 90 days");
 
-  const chartData = {
-    labels: [1,2,3,4,5],
-    datasets: [
-      {
-        label: 'Dataset 1',
-        data: [5,5,5,5,5],
-        backgroundColor: 'rgb(255, 99, 132)',
-      },
-      {
-        label: 'Dataset 2',
-        data: [5,5,5,5,5],
-        backgroundColor: 'rgb(75, 192, 192)',
-      },
-      {
-        label: 'Dataset 3',
-        data: [5,5,5,5,5],
-        backgroundColor: 'rgb(53, 162, 235)',
-      },
-    ],
-  };
+  var last7DaysSorted = last7DaysSorted_i.sort()
+  //console.log(last7DaysSorted_i);
+  //console.log(last7DaysSorted);
+  const chartData1 = generateDailyChartData(projectNames, projectDatabase, last7DaysSorted);
+  const chartData2 = generatePieData(projectDatabase,1,latestDate);
+  const chartData3 = generatePieData(projectDatabase,2);
+  const chartData4 = generateChartData(projectDatabase);
+  const chartData5 = generatePieData(projectDatabase,3);
 
   const Item = styled(Paper)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -255,25 +352,1359 @@ function MagicEdenPage()
 
   return (<div style={{ height: 600, width: '100%' }}>
             <Grid container spacing={2}>
-              <Grid item xs={3}>
-                <Item><Bar options={chartOptions} data={chartData} height={null}/></Item>
+              <Grid item xs={6}>
+                <Item><Bar options={chartOptions1} data={chartData1} height={null}/></Item>
               </Grid>
-              <Grid item xs={3}>
-                <Item><Bar options={chartOptions} data={chartData} height={null}/></Item>
+              <Grid item xs={6}>
+                <Item><Bar options={chartOptions4} data={chartData4} height={null}/></Item>
               </Grid>
-              <Grid item xs={3}>
-                <Item><Bar options={chartOptions} data={chartData} height={null}/></Item>
+              <Grid item xs={4}>
+                <Item><Doughnut options={chartOptions2} data={chartData2} height={null}/></Item>
               </Grid>
-              <Grid item xs={3}>
-                <Item><Bar options={chartOptions} data={chartData} height={null}/></Item>
+              <Grid item xs={4}>
+                <Item><Doughnut options={chartOptions3} data={chartData3} height={null}/></Item>
+              </Grid>
+              <Grid item xs={4}>
+                <Item><Doughnut options={chartOptions5} data={chartData5} height={null}/></Item>
               </Grid>
           </Grid>
           <br></br>
           <DataGrid autoPageSize rowHeight={25} getRowId={(row) => row.PROJECT_NAME + row.DAILY_SALES} rows={dailyRows} columns={gridColDef}></DataGrid>
           </div>
     );
+
+
+  function generateDailyChartData(projectNames, projectDatabase, last7DaysSorted)
+  {
+    var dataa = [[],[],[],[],[],[],[],[],[],[]]
+    var datees = [];
+    var colors = [
+      '#BEE5EB',
+      '#CA7CE6',
+      '#66D4E6',
+      '#E6914E',
+      '#B9E65A',
+      '#5DEB4D',
+      '#B8CBE6',
+      '#A7E6A0',
+      '#E68AC5',
+      '#E6CA95',
+    ]
+    last7DaysSorted.forEach((element, index) => {
+      dataa[0].push(projectDatabase[projectNames[0]][last7DaysSorted[index]*1000])
+      dataa[1].push(projectDatabase[projectNames[1]][last7DaysSorted[index]*1000])
+      dataa[2].push(projectDatabase[projectNames[2]][last7DaysSorted[index]*1000])
+      dataa[3].push(projectDatabase[projectNames[3]][last7DaysSorted[index]*1000])
+      dataa[4].push(projectDatabase[projectNames[4]][last7DaysSorted[index]*1000])
+      dataa[5].push(projectDatabase[projectNames[5]][last7DaysSorted[index]*1000])
+      dataa[6].push(projectDatabase[projectNames[6]][last7DaysSorted[index]*1000])
+      dataa[7].push(projectDatabase[projectNames[7]][last7DaysSorted[index]*1000])
+      dataa[8].push(projectDatabase[projectNames[8]][last7DaysSorted[index]*1000])
+      dataa[9].push(projectDatabase[projectNames[9]][last7DaysSorted[index]*1000])
+      datees.push(new Date(element*1000).toISOString().substr(0,10));
+    })
+
+    //console.log(dataa)
+    return {
+      labels: datees,
+      datasets: [
+        {
+          label: displayNiceTitle(projectNames[0]),
+          data: dataa[0],
+          backgroundColor: colors[0],
+        },
+        {
+          label: displayNiceTitle(projectNames[1]),
+          data: dataa[1],
+          backgroundColor: colors[1],
+        },
+        {
+          label: displayNiceTitle(projectNames[2]),
+          data: dataa[2],
+          backgroundColor: colors[2],
+        },
+        {
+          label: displayNiceTitle(projectNames[3]),
+          data: dataa[3],
+          backgroundColor: colors[3],
+        },
+        {
+          label: displayNiceTitle(projectNames[4]),
+          data: dataa[4],
+          backgroundColor: colors[4],
+        },
+        {
+          label: displayNiceTitle(projectNames[5]),
+          data: dataa[5],
+          backgroundColor: colors[5],
+        },
+        {
+          label: displayNiceTitle(projectNames[6]),
+          data: dataa[6],
+          backgroundColor: colors[6],
+        },
+        {
+          label: displayNiceTitle(projectNames[7]),
+          data: dataa[7],
+          backgroundColor: colors[7],
+        },
+        {
+          label: displayNiceTitle(projectNames[8]),
+          data: dataa[8],
+          backgroundColor: colors[8],
+        },
+        {
+          label: displayNiceTitle(projectNames[9]),
+          data: dataa[9],
+          backgroundColor: colors[9],
+        },
+
+      ],
+    };
+  }
+
+  function generateChartData(projectDB) {
+
+    var biggest = [0,0,0,0,0,0]
+    var biggestNames = ["","","","","",""]
+    var Sum = 0;
+    for ( var element in projectDB )
+    {
+      var minElement = biggest[0]
+      var minElementIndex = 0
+      biggest.forEach((m,i) => {
+        if (m < minElement)
+        {
+          minElement = m;
+          minElementIndex = i;
+        }
+      })
+
+      if (projectDB[element]['ts'] > minElement)
+      {
+        if (element != 'others')
+        {
+          biggest[minElementIndex] = projectDB[element]['ts'];
+          biggestNames[minElementIndex] = displayNiceTitle(element);
+        }
+      }
+
+      Sum += projectDB[element]['ts'];
+      
+    }
+
+    return {
+      labels: biggestNames,
+      datasets: [
+        {
+          //label: 'Dataset 1',
+          data: biggest,
+          backgroundColor: '#E68AC5',
+        },
+      ],
+    };
+  }
+
+  function generatePieData(projectDatabase, index, latestDate) {
+
+    var xAxis = [1,2,3,4,5,6,7];
+    var yAxis = [1,2,3,4,5,6,7,8,9,10];
+
+    if (index === 1)
+    {
+      //Total Volume Exchanged Today
+      var limit = [0,0,0,0,0,0,0,0,0,0]
+      var limitNames = ["","","","","","","","","","",]
+      var sum = 0;
+      for (element in projectDatabase)
+      {
+        sum += isNaN(projectDatabase[element][latestDate]) ? 0 : projectDatabase[element][latestDate]
+
+        var minLimit = limit[0];
+        var minLimitIndex = 0;
+        limit.forEach((e,i) => {
+          if (e < minLimit)
+          {
+            minLimit = e;
+            minLimitIndex = i;
+          }
+        })
+
+        if (projectDatabase[element][latestDate] > minLimit)
+        {
+          if (element != 'others')
+          {
+            limit[minLimitIndex] = projectDatabase[element][latestDate];
+            limitNames[minLimitIndex] = displayNiceTitle(element);
+          }
+        }
+      }
+
+      limit.forEach(e => {
+        sum -= e
+      })
+      //console.log(sum);
+      limit.push(sum)
+      limitNames.push("Others")
+
+      xAxis = limitNames;
+      yAxis = limit;
+    }
+
+    if (index === 2)
+    {
+      // 90 Day Monthly Volume
+      var limit = [0,0,0,0,0,0,0,0,0,0]
+      var limitNames = ["","","","","","","","","","",]
+      var sum = 0;
+      for (element in projectDatabase)
+      {
+        sum += projectDatabase[element]['ts']
+
+        var minLimit = limit[0];
+        var minLimitIndex = 0;
+        limit.forEach((e,i) => {
+          if (e < minLimit)
+          {
+            minLimit = e;
+            minLimitIndex = i;
+          }
+        })
+
+        if (projectDatabase[element]['ts'] > minLimit)
+        {
+          if (element != 'others')
+          {
+            limit[minLimitIndex] = projectDatabase[element]['ts'];
+            limitNames[minLimitIndex] = displayNiceTitle(element);
+          }
+        }
+      }
+
+      limit.forEach(e => {
+        sum -= e;
+      })
+
+      limit.push(sum)
+      limitNames.push("Others")
+
+      xAxis = limitNames;
+      yAxis = limit;
+    }
+
+    if (index === 3)
+    {
+      // Number of NFTs Traded
+      var limit = [0,0,0,0,0,0,0,0,0,0]
+      var limitNames = ["","","","","","","","","","",]
+      var sum = 0;
+      for (element in projectDatabase)
+      {
+        sum += projectDatabase[element]['tc']
+
+        var minLimit = limit[0];
+        var minLimitIndex = 0;
+        limit.forEach((e,i) => {
+          if (e < minLimit)
+          {
+            minLimit = e;
+            minLimitIndex = i;
+          }
+        })
+
+        if (projectDatabase[element]['tc'] > minLimit)
+        {
+          if (element != 'others')
+          {
+            limit[minLimitIndex] = projectDatabase[element]['tc'];
+            limitNames[minLimitIndex] = displayNiceTitle(element);
+          }
+        }
+      }
+
+      limit.forEach(e => {
+        sum -= e;
+      })
+
+      limit.push(sum)
+      limitNames.push("Others")
+
+      xAxis = limitNames;
+      yAxis = limit;
+    }
+
+    return {
+      labels: xAxis,
+      datasets: [
+        {
+          label: 'Dataset 1',
+          data: yAxis,
+          backgroundColor: '#E68AC5',
+        },
+      ],
+    };
+  }
 }
 
+function SolSeaPage()
+{
+  const [data,setData] = useState("")
+  React.useEffect(() => {
+    axios.get("/api/getSolSeaSales").then (response => {
+      setData(response);
+    }).catch (error => {
+      console.log(error);
+    })
+  },[])
+
+  if (data === "") return (<div><CircularProgress /></div>);
+
+
+  function generateChartOptions(myVar) {
+    return {
+      elements: {
+        bar: {
+          borderWidth: 2,
+        },
+      },
+      responsive: true,
+      scales: {
+        x: {
+          stacked: true,
+        },
+        y: {
+          stacked: true,
+        },
+      },
+      plugins: {
+        legend: {
+          display: false,
+          position: 'right',
+        },
+        title: {
+          display: true,
+          text: myVar,
+        },
+      },
+    };
+  }
+
+  function generatePieOptions(myVar) {
+    return {
+      elements: {
+        bar: {
+          borderWidth: 2,
+        },
+      },
+      responsive: true,
+      plugins: {
+        legend: {
+          display: false,
+          position: 'right',
+        },
+        title: {
+          display: true,
+          text: myVar,
+        },
+      },
+    };
+  }
+
+  // manipulating the data -- start
+
+  var projectDatabase = {}
+  var latestDate = undefined
+  var latestDateMonth = undefined
+  var latestDateMonthCalc = undefined
+
+  
+
+  var uniqueDate = {}
+  var last7DaysSorted_i = [0,0,0,0,0,0,0];
+
+  data.data.forEach( row => {
+    var dateParsed = new Date(row.DAY_DATE)
+
+    if (latestDate === undefined || date.subtract(dateParsed,latestDate).toSeconds > 0)
+    {
+      latestDate = dateParsed;
+    }
+
+    uniqueDate[dateParsed.getTime()] = 1;
+
+
+    if (projectDatabase[row.PROJECT_NAME] === undefined)
+    {
+      projectDatabase[row.PROJECT_NAME] = {}
+    }
+
+    projectDatabase[row.PROJECT_NAME][dateParsed] = row.SUM_SALES_PRICE
+    projectDatabase[row.PROJECT_NAME][dateParsed.getTime()] = row.SUM_SALES_PRICE
+    projectDatabase[row.PROJECT_NAME]['c' + dateParsed] = row.COUNT_NFT_SALES
+    projectDatabase[row.PROJECT_NAME]['c' + dateParsed.getTime()] = row.COUNT_NFT_SALES
+    
+    
+    var dateMonth = dateParsed.getFullYear() + '-' + dateParsed.getMonth().toString().padStart(2,'0')
+    var dateMonthCalc = dateParsed.getFullYear() * 12 + dateParsed.getMonth()
+    
+    if (latestDateMonthCalc === undefined || dateMonthCalc > latestDateMonthCalc)
+    {
+      latestDateMonth = dateMonth;
+      latestDateMonthCalc = dateMonthCalc
+    }
+
+    if( projectDatabase[row.PROJECT_NAME]['ts'] === undefined )
+    {
+      projectDatabase[row.PROJECT_NAME]['ts'] = 0
+      projectDatabase[row.PROJECT_NAME]['tc'] = 0
+    }
+
+    if (projectDatabase[row.PROJECT_NAME][dateMonth] === undefined)
+    {
+      projectDatabase[row.PROJECT_NAME][dateMonth] = 0;
+      projectDatabase[row.PROJECT_NAME]['c' + dateMonth] = 0;
+    }
+    projectDatabase[row.PROJECT_NAME][dateMonth] += row.SUM_SALES_PRICE;
+    projectDatabase[row.PROJECT_NAME]['c' + dateMonth] += row.COUNT_NFT_SALES;
+    projectDatabase[row.PROJECT_NAME]['ts'] += row.SUM_SALES_PRICE;
+    projectDatabase[row.PROJECT_NAME]['tc'] += row.COUNT_NFT_SALES;
+    
+  })
+
+  
+
+  for (var key in uniqueDate) {
+    var minTime = last7DaysSorted_i[0]
+    var minTimeIndex = 0;
+
+    last7DaysSorted_i.forEach((element,index) =>{
+      if (minTime > element)
+      {
+        minTime = element
+        minTimeIndex = index
+      }
+    })
+    //console.log(key);
+    var ldate = new Date(key / 1000);
+    if (ldate.getTime() > minTime)
+    {
+      last7DaysSorted_i[minTimeIndex] = ldate.getTime()
+    }
+  }
+
+
+
+  //console.log(latestDate);
+  console.log(projectDatabase);
+
+  var dailyRows = []
+  var minValues = [0,0,0,0,0,0,0,0,0,0];
+  var projectNames = ["","","","","","","","","","",];
+  
+  for (var element in projectDatabase) {
+    var daily = projectDatabase[element][latestDate] === undefined ? 0 : Math.round(projectDatabase[element][latestDate]*100) / 100;
+    var dailyCount = projectDatabase[element]['c' + latestDate] === undefined ? 0 : Math.round(projectDatabase[element]['c' + latestDate]*100) / 100;
+    var monthlyCount = projectDatabase[element]['c' + latestDateMonth] === undefined ? 0 : projectDatabase[element]['c' + latestDateMonth];
+    var monthly = projectDatabase[element][latestDateMonth] === undefined ? 0 : Math.round(projectDatabase[element][latestDateMonth]*100) / 100
+    var quartlyCount = projectDatabase[element]['tc'] === undefined ? 0 : projectDatabase[element]['tc'];
+    var quartly = projectDatabase[element]['ts'] === undefined ? 0 : Math.round(projectDatabase[element]['ts']*100) / 100
+
+    var currentMin = 99999999
+    var minIndex = -1
+    // get the minimum from the minValues
+    minValues.forEach((element, index, array) => {
+      if ( element < currentMin )
+      {
+        currentMin = element;
+        minIndex = index;
+      }
+    })
+
+    if (projectDatabase[element][latestDate] > currentMin)
+    {
+      if (element != 'others')
+      {
+        minValues[minIndex] = projectDatabase[element][latestDate];
+        projectNames[minIndex] = element;
+      }
+    }
+
+    dailyRows.push({
+      PROJECT_NAME:displayNiceTitle(element),
+      DAILY_SALES:daily,
+      DAILY_COUNT:dailyCount,
+      MONTHLY_SALES:monthly,
+      MONTHLY_COUNT:monthlyCount,
+      QUARTLY_SALES:quartly,
+      QUARTLY_COUNT:quartlyCount,
+    })
+  }
+  
+  //console.log(minValues);
+  //console.log(projectNames);
+
+  //console.log(dailyRows);
+
+  // manipulating the data -- end
+
+  const gridColDef = [
+    { field: 'PROJECT_NAME', headerName: 'NFT Collection', width: 250 },
+    { field: 'DAILY_SALES', headerName: '24h Sales (SOL)', width: 200 },
+    { field: 'DAILY_COUNT', headerName: '24h Sales (#)', width: 200 },
+    { field: 'MONTHLY_SALES', headerName: '30d Sales (SOL)', width: 200 },
+    { field: 'MONTHLY_COUNT', headerName: '30d Sales (#)', width: 200 },
+    { field: 'QUARTLY_SALES', headerName: '90d Sales (SOL)', width: 200 },
+    { field: 'QUARTLY_COUNT', headerName: '90d Sales (#)', width: 200 },
+  ];
+
+  const chartOptions1 = generateChartOptions("Top 10 Daily Projects");
+  const chartOptions2 = generatePieOptions("Total Volume Exchanged Today");
+  const chartOptions3 = generatePieOptions("90 Day Highest Volume");
+  const chartOptions4 = generateChartOptions("90 Day Monthly Volume");
+  const chartOptions5 = generatePieOptions("Number of NFTs Traded Over the last 90 days");
+
+  var last7DaysSorted = last7DaysSorted_i.sort()
+  //console.log(last7DaysSorted_i);
+  //console.log(last7DaysSorted);
+  const chartData1 = generateDailyChartData(projectNames, projectDatabase, last7DaysSorted);
+  const chartData2 = generatePieData(projectDatabase,1,latestDate);
+  const chartData3 = generatePieData(projectDatabase,2);
+  const chartData4 = generateChartData(projectDatabase);
+  const chartData5 = generatePieData(projectDatabase,3);
+
+  const Item = styled(Paper)(({ theme }) => ({
+    backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+    ...theme.typography.body2,
+    padding: theme.spacing(1),
+    textAlign: 'center',
+    color: theme.palette.text.secondary,
+  }));
+
+  return (<div style={{ height: 600, width: '100%' }}>
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <Item><Bar options={chartOptions1} data={chartData1} height={null}/></Item>
+              </Grid>
+              <Grid item xs={6}>
+                <Item><Bar options={chartOptions4} data={chartData4} height={null}/></Item>
+              </Grid>
+              <Grid item xs={4}>
+                <Item><Doughnut options={chartOptions2} data={chartData2} height={null}/></Item>
+              </Grid>
+              <Grid item xs={4}>
+                <Item><Doughnut options={chartOptions3} data={chartData3} height={null}/></Item>
+              </Grid>
+              <Grid item xs={4}>
+                <Item><Doughnut options={chartOptions5} data={chartData5} height={null}/></Item>
+              </Grid>
+          </Grid>
+          <br></br>
+          <DataGrid autoPageSize rowHeight={25} getRowId={(row) => row.PROJECT_NAME + row.DAILY_SALES} rows={dailyRows} columns={gridColDef}></DataGrid>
+          </div>
+    );
+
+
+  function generateDailyChartData(projectNames, projectDatabase, last7DaysSorted)
+  {
+    var dataa = [[],[],[],[],[],[],[],[],[],[]]
+    var datees = [];
+    var colors = [
+      '#BEE5EB',
+      '#CA7CE6',
+      '#66D4E6',
+      '#E6914E',
+      '#B9E65A',
+      '#5DEB4D',
+      '#B8CBE6',
+      '#A7E6A0',
+      '#E68AC5',
+      '#E6CA95',
+    ]
+    last7DaysSorted.forEach((element, index) => {
+      dataa[0].push(projectDatabase[projectNames[0]][last7DaysSorted[index]*1000])
+      dataa[1].push(projectDatabase[projectNames[1]][last7DaysSorted[index]*1000])
+      dataa[2].push(projectDatabase[projectNames[2]][last7DaysSorted[index]*1000])
+      //dataa[3].push(projectDatabase[projectNames[3]][last7DaysSorted[index]*1000])
+      //dataa[4].push(projectDatabase[projectNames[4]][last7DaysSorted[index]*1000])
+      //dataa[5].push(projectDatabase[projectNames[5]][last7DaysSorted[index]*1000])
+      //dataa[6].push(projectDatabase[projectNames[6]][last7DaysSorted[index]*1000])
+      //dataa[7].push(projectDatabase[projectNames[7]][last7DaysSorted[index]*1000])
+      //dataa[8].push(projectDatabase[projectNames[8]][last7DaysSorted[index]*1000])
+      //dataa[9].push(projectDatabase[projectNames[9]][last7DaysSorted[index]*1000])
+      datees.push(new Date(element*1000).toISOString().substr(0,10));
+    })
+
+    //console.log(dataa)
+    return {
+      labels: datees,
+      datasets: [
+        {
+          label: displayNiceTitle(projectNames[0]),
+          data: dataa[0],
+          backgroundColor: colors[0],
+        },
+        {
+          label: displayNiceTitle(projectNames[1]),
+          data: dataa[1],
+          backgroundColor: colors[1],
+        },
+        {
+          label: displayNiceTitle(projectNames[2]),
+          data: dataa[2],
+          backgroundColor: colors[2],
+        },
+        {
+          label: displayNiceTitle(projectNames[3]),
+          data: dataa[3],
+          backgroundColor: colors[3],
+        },
+        {
+          label: displayNiceTitle(projectNames[4]),
+          data: dataa[4],
+          backgroundColor: colors[4],
+        },
+        {
+          label: displayNiceTitle(projectNames[5]),
+          data: dataa[5],
+          backgroundColor: colors[5],
+        },
+        {
+          label: displayNiceTitle(projectNames[6]),
+          data: dataa[6],
+          backgroundColor: colors[6],
+        },
+        {
+          label: displayNiceTitle(projectNames[7]),
+          data: dataa[7],
+          backgroundColor: colors[7],
+        },
+        {
+          label: displayNiceTitle(projectNames[8]),
+          data: dataa[8],
+          backgroundColor: colors[8],
+        },
+        {
+          label: displayNiceTitle(projectNames[9]),
+          data: dataa[9],
+          backgroundColor: colors[9],
+        },
+
+      ],
+    };
+  }
+
+  function generateChartData(projectDB) {
+
+    var biggest = [0,0,0,0,0,0]
+    var biggestNames = ["","","","","",""]
+    var Sum = 0;
+    for ( var element in projectDB )
+    {
+      var minElement = biggest[0]
+      var minElementIndex = 0
+      biggest.forEach((m,i) => {
+        if (m < minElement)
+        {
+          minElement = m;
+          minElementIndex = i;
+        }
+      })
+
+      if (projectDB[element]['ts'] > minElement)
+      {
+        if (element != 'others')
+        {
+          biggest[minElementIndex] = projectDB[element]['ts'];
+          biggestNames[minElementIndex] = displayNiceTitle(element);
+        }
+      }
+
+      Sum += projectDB[element]['ts'];
+      
+    }
+
+    return {
+      labels: biggestNames,
+      datasets: [
+        {
+          //label: 'Dataset 1',
+          data: biggest,
+          backgroundColor: '#E68AC5',
+        },
+      ],
+    };
+  }
+
+  function generatePieData(projectDatabase, index, latestDate) {
+
+    var xAxis = [1,2,3,4,5,6,7];
+    var yAxis = [1,2,3,4,5,6,7,8,9,10];
+
+    if (index === 1)
+    {
+      //Total Volume Exchanged Today
+      var limit = [0,0,0,0,0,0,0,0,0,0]
+      var limitNames = ["","","","","","","","","","",]
+      var sum = 0;
+      for (element in projectDatabase)
+      {
+        sum += isNaN(projectDatabase[element][latestDate]) ? 0 : projectDatabase[element][latestDate]
+
+        var minLimit = limit[0];
+        var minLimitIndex = 0;
+        limit.forEach((e,i) => {
+          if (e < minLimit)
+          {
+            minLimit = e;
+            minLimitIndex = i;
+          }
+        })
+
+        if (projectDatabase[element][latestDate] > minLimit)
+        {
+          if (element != 'others')
+          {
+            limit[minLimitIndex] = projectDatabase[element][latestDate];
+            limitNames[minLimitIndex] = displayNiceTitle(element);
+          }
+        }
+      }
+
+      limit.forEach(e => {
+        sum -= e
+      })
+      //console.log(sum);
+      limit.push(sum)
+      limitNames.push("Others")
+
+      xAxis = limitNames;
+      yAxis = limit;
+    }
+
+    if (index === 2)
+    {
+      // 90 Day Monthly Volume
+      var limit = [0,0,0,0,0,0,0,0,0,0]
+      var limitNames = ["","","","","","","","","","",]
+      var sum = 0;
+      for (element in projectDatabase)
+      {
+        sum += projectDatabase[element]['ts']
+
+        var minLimit = limit[0];
+        var minLimitIndex = 0;
+        limit.forEach((e,i) => {
+          if (e < minLimit)
+          {
+            minLimit = e;
+            minLimitIndex = i;
+          }
+        })
+
+        if (projectDatabase[element]['ts'] > minLimit)
+        {
+          if (element != 'others')
+          {
+            limit[minLimitIndex] = projectDatabase[element]['ts'];
+            limitNames[minLimitIndex] = displayNiceTitle(element);
+          }
+        }
+      }
+
+      limit.forEach(e => {
+        sum -= e;
+      })
+
+      limit.push(sum)
+      limitNames.push("Others")
+
+      xAxis = limitNames;
+      yAxis = limit;
+    }
+
+    if (index === 3)
+    {
+      // Number of NFTs Traded
+      var limit = [0,0,0,0,0,0,0,0,0,0]
+      var limitNames = ["","","","","","","","","","",]
+      var sum = 0;
+      for (element in projectDatabase)
+      {
+        sum += projectDatabase[element]['tc']
+
+        var minLimit = limit[0];
+        var minLimitIndex = 0;
+        limit.forEach((e,i) => {
+          if (e < minLimit)
+          {
+            minLimit = e;
+            minLimitIndex = i;
+          }
+        })
+
+        if (projectDatabase[element]['tc'] > minLimit)
+        {
+          if (element != 'others')
+          {
+            limit[minLimitIndex] = projectDatabase[element]['tc'];
+            limitNames[minLimitIndex] = displayNiceTitle(element);
+          }
+        }
+      }
+
+      limit.forEach(e => {
+        sum -= e;
+      })
+
+      limit.push(sum)
+      limitNames.push("Others")
+
+      xAxis = limitNames;
+      yAxis = limit;
+    }
+
+    return {
+      labels: xAxis,
+      datasets: [
+        {
+          label: 'Dataset 1',
+          data: yAxis,
+          backgroundColor: '#E68AC5',
+        },
+      ],
+    };
+  }
+}
+
+function SolartPage()
+{
+  const [data,setData] = useState("")
+  React.useEffect(() => {
+    axios.get("/api/getSolanartSales").then (response => {
+      setData(response);
+    }).catch (error => {
+      console.log(error);
+    })
+  },[])
+
+  if (data === "") return (<div><CircularProgress /></div>);
+
+
+  function generateChartOptions(myVar) {
+    return {
+      elements: {
+        bar: {
+          borderWidth: 2,
+        },
+      },
+      responsive: true,
+      scales: {
+        x: {
+          stacked: true,
+        },
+        y: {
+          stacked: true,
+        },
+      },
+      plugins: {
+        legend: {
+          display: false,
+          position: 'right',
+        },
+        title: {
+          display: true,
+          text: myVar,
+        },
+      },
+    };
+  }
+
+  function generatePieOptions(myVar) {
+    return {
+      elements: {
+        bar: {
+          borderWidth: 2,
+        },
+      },
+      responsive: true,
+      plugins: {
+        legend: {
+          display: false,
+          position: 'right',
+        },
+        title: {
+          display: true,
+          text: myVar,
+        },
+      },
+    };
+  }
+
+  // manipulating the data -- start
+
+  var projectDatabase = {}
+  var latestDate = undefined
+  var latestDateMonth = undefined
+  var latestDateMonthCalc = undefined
+
+  
+
+  var uniqueDate = {}
+  var last7DaysSorted_i = [0,0,0,0,0,0,0];
+
+  data.data.forEach( row => {
+    var dateParsed = new Date(row.DAY_DATE)
+
+    if (latestDate === undefined || date.subtract(dateParsed,latestDate).toSeconds > 0)
+    {
+      latestDate = dateParsed;
+    }
+
+    uniqueDate[dateParsed.getTime()] = 1;
+
+
+    if (projectDatabase[row.PROJECT_NAME] === undefined)
+    {
+      projectDatabase[row.PROJECT_NAME] = {}
+    }
+
+    projectDatabase[row.PROJECT_NAME][dateParsed] = row.SUM_SALES_PRICE
+    projectDatabase[row.PROJECT_NAME][dateParsed.getTime()] = row.SUM_SALES_PRICE
+    projectDatabase[row.PROJECT_NAME]['c' + dateParsed] = row.COUNT_NFT_SALES
+    projectDatabase[row.PROJECT_NAME]['c' + dateParsed.getTime()] = row.COUNT_NFT_SALES
+    
+    
+    var dateMonth = dateParsed.getFullYear() + '-' + dateParsed.getMonth().toString().padStart(2,'0')
+    var dateMonthCalc = dateParsed.getFullYear() * 12 + dateParsed.getMonth()
+    
+    if (latestDateMonthCalc === undefined || dateMonthCalc > latestDateMonthCalc)
+    {
+      latestDateMonth = dateMonth;
+      latestDateMonthCalc = dateMonthCalc
+    }
+
+    if( projectDatabase[row.PROJECT_NAME]['ts'] === undefined )
+    {
+      projectDatabase[row.PROJECT_NAME]['ts'] = 0
+      projectDatabase[row.PROJECT_NAME]['tc'] = 0
+    }
+
+    if (projectDatabase[row.PROJECT_NAME][dateMonth] === undefined)
+    {
+      projectDatabase[row.PROJECT_NAME][dateMonth] = 0;
+      projectDatabase[row.PROJECT_NAME]['c' + dateMonth] = 0;
+    }
+    projectDatabase[row.PROJECT_NAME][dateMonth] += row.SUM_SALES_PRICE;
+    projectDatabase[row.PROJECT_NAME]['c' + dateMonth] += row.COUNT_NFT_SALES;
+    projectDatabase[row.PROJECT_NAME]['ts'] += row.SUM_SALES_PRICE;
+    projectDatabase[row.PROJECT_NAME]['tc'] += row.COUNT_NFT_SALES;
+    
+  })
+
+  
+
+  for (var key in uniqueDate) {
+    var minTime = last7DaysSorted_i[0]
+    var minTimeIndex = 0;
+
+    last7DaysSorted_i.forEach((element,index) =>{
+      if (minTime > element)
+      {
+        minTime = element
+        minTimeIndex = index
+      }
+    })
+    //console.log(key);
+    var ldate = new Date(key / 1000);
+    if (ldate.getTime() > minTime)
+    {
+      last7DaysSorted_i[minTimeIndex] = ldate.getTime()
+    }
+  }
+
+
+
+  //console.log(latestDate);
+  console.log(projectDatabase);
+
+  var dailyRows = []
+  var minValues = [0,0,0,0,0,0,0,0,0,0];
+  var projectNames = ["","","","","","","","","","",];
+  
+  for (var element in projectDatabase) {
+    var daily = projectDatabase[element][latestDate] === undefined ? 0 : Math.round(projectDatabase[element][latestDate]*100) / 100;
+    var dailyCount = projectDatabase[element]['c' + latestDate] === undefined ? 0 : Math.round(projectDatabase[element]['c' + latestDate]*100) / 100;
+    var monthlyCount = projectDatabase[element]['c' + latestDateMonth] === undefined ? 0 : projectDatabase[element]['c' + latestDateMonth];
+    var monthly = projectDatabase[element][latestDateMonth] === undefined ? 0 : Math.round(projectDatabase[element][latestDateMonth]*100) / 100
+    var quartlyCount = projectDatabase[element]['tc'] === undefined ? 0 : projectDatabase[element]['tc'];
+    var quartly = projectDatabase[element]['ts'] === undefined ? 0 : Math.round(projectDatabase[element]['ts']*100) / 100
+
+    var currentMin = 99999999
+    var minIndex = -1
+    // get the minimum from the minValues
+    minValues.forEach((element, index, array) => {
+      if ( element < currentMin )
+      {
+        currentMin = element;
+        minIndex = index;
+      }
+    })
+
+    if (projectDatabase[element][latestDate] > currentMin)
+    {
+      if (element != 'others')
+      {
+        minValues[minIndex] = projectDatabase[element][latestDate];
+        projectNames[minIndex] = element;
+      }
+    }
+
+    dailyRows.push({
+      PROJECT_NAME:displayNiceTitle(element),
+      DAILY_SALES:daily,
+      DAILY_COUNT:dailyCount,
+      MONTHLY_SALES:monthly,
+      MONTHLY_COUNT:monthlyCount,
+      QUARTLY_SALES:quartly,
+      QUARTLY_COUNT:quartlyCount,
+    })
+  }
+  
+  //console.log(minValues);
+  //console.log(projectNames);
+
+  //console.log(dailyRows);
+
+  // manipulating the data -- end
+
+  const gridColDef = [
+    { field: 'PROJECT_NAME', headerName: 'NFT Collection', width: 250 },
+    { field: 'DAILY_SALES', headerName: '24h Sales (SOL)', width: 200 },
+    { field: 'DAILY_COUNT', headerName: '24h Sales (#)', width: 200 },
+    { field: 'MONTHLY_SALES', headerName: '30d Sales (SOL)', width: 200 },
+    { field: 'MONTHLY_COUNT', headerName: '30d Sales (#)', width: 200 },
+    { field: 'QUARTLY_SALES', headerName: '90d Sales (SOL)', width: 200 },
+    { field: 'QUARTLY_COUNT', headerName: '90d Sales (#)', width: 200 },
+  ];
+
+  const chartOptions1 = generateChartOptions("Top 10 Daily Projects");
+  const chartOptions2 = generatePieOptions("Total Volume Exchanged Today");
+  const chartOptions3 = generatePieOptions("90 Day Highest Volume");
+  const chartOptions4 = generateChartOptions("90 Day Monthly Volume");
+  const chartOptions5 = generatePieOptions("Number of NFTs Traded Over the last 90 days");
+
+  var last7DaysSorted = last7DaysSorted_i.sort()
+  //console.log(last7DaysSorted_i);
+  //console.log(last7DaysSorted);
+  const chartData1 = generateDailyChartData(projectNames, projectDatabase, last7DaysSorted);
+  const chartData2 = generatePieData(projectDatabase,1,latestDate);
+  const chartData3 = generatePieData(projectDatabase,2);
+  const chartData4 = generateChartData(projectDatabase);
+  const chartData5 = generatePieData(projectDatabase,3);
+
+  const Item = styled(Paper)(({ theme }) => ({
+    backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+    ...theme.typography.body2,
+    padding: theme.spacing(1),
+    textAlign: 'center',
+    color: theme.palette.text.secondary,
+  }));
+
+  return (<div style={{ height: 600, width: '100%' }}>
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <Item><Bar options={chartOptions1} data={chartData1} height={null}/></Item>
+              </Grid>
+              <Grid item xs={6}>
+                <Item><Bar options={chartOptions4} data={chartData4} height={null}/></Item>
+              </Grid>
+              <Grid item xs={4}>
+                <Item><Doughnut options={chartOptions2} data={chartData2} height={null}/></Item>
+              </Grid>
+              <Grid item xs={4}>
+                <Item><Doughnut options={chartOptions3} data={chartData3} height={null}/></Item>
+              </Grid>
+              <Grid item xs={4}>
+                <Item><Doughnut options={chartOptions5} data={chartData5} height={null}/></Item>
+              </Grid>
+          </Grid>
+          <br></br>
+          <DataGrid autoPageSize rowHeight={25} getRowId={(row) => row.PROJECT_NAME + row.DAILY_SALES} rows={dailyRows} columns={gridColDef}></DataGrid>
+          </div>
+    );
+
+
+  function generateDailyChartData(projectNames, projectDatabase, last7DaysSorted)
+  {
+    var dataa = [[],[],[],[],[],[],[],[],[],[]]
+    var datees = [];
+    var colors = [
+      '#BEE5EB',
+      '#CA7CE6',
+      '#66D4E6',
+      '#E6914E',
+      '#B9E65A',
+      '#5DEB4D',
+      '#B8CBE6',
+      '#A7E6A0',
+      '#E68AC5',
+      '#E6CA95',
+    ]
+    last7DaysSorted.forEach((element, index) => {
+      dataa[0].push(projectDatabase[projectNames[0]][last7DaysSorted[index]*1000])
+      dataa[1].push(projectDatabase[projectNames[1]][last7DaysSorted[index]*1000])
+      dataa[2].push(projectDatabase[projectNames[2]][last7DaysSorted[index]*1000])
+      dataa[3].push(projectDatabase[projectNames[3]][last7DaysSorted[index]*1000])
+      dataa[4].push(projectDatabase[projectNames[4]][last7DaysSorted[index]*1000])
+      dataa[5].push(projectDatabase[projectNames[5]][last7DaysSorted[index]*1000])
+      dataa[6].push(projectDatabase[projectNames[6]][last7DaysSorted[index]*1000])
+      dataa[7].push(projectDatabase[projectNames[7]][last7DaysSorted[index]*1000])
+      dataa[8].push(projectDatabase[projectNames[8]][last7DaysSorted[index]*1000])
+      dataa[9].push(projectDatabase[projectNames[9]][last7DaysSorted[index]*1000])
+      datees.push(new Date(element*1000).toISOString().substr(0,10));
+    })
+
+    //console.log(dataa)
+    return {
+      labels: datees,
+      datasets: [
+        {
+          label: displayNiceTitle(projectNames[0]),
+          data: dataa[0],
+          backgroundColor: colors[0],
+        },
+        {
+          label: displayNiceTitle(projectNames[1]),
+          data: dataa[1],
+          backgroundColor: colors[1],
+        },
+        {
+          label: displayNiceTitle(projectNames[2]),
+          data: dataa[2],
+          backgroundColor: colors[2],
+        },
+        {
+          label: displayNiceTitle(projectNames[3]),
+          data: dataa[3],
+          backgroundColor: colors[3],
+        },
+        {
+          label: displayNiceTitle(projectNames[4]),
+          data: dataa[4],
+          backgroundColor: colors[4],
+        },
+        {
+          label: displayNiceTitle(projectNames[5]),
+          data: dataa[5],
+          backgroundColor: colors[5],
+        },
+        {
+          label: displayNiceTitle(projectNames[6]),
+          data: dataa[6],
+          backgroundColor: colors[6],
+        },
+        {
+          label: displayNiceTitle(projectNames[7]),
+          data: dataa[7],
+          backgroundColor: colors[7],
+        },
+        {
+          label: displayNiceTitle(projectNames[8]),
+          data: dataa[8],
+          backgroundColor: colors[8],
+        },
+        {
+          label: displayNiceTitle(projectNames[9]),
+          data: dataa[9],
+          backgroundColor: colors[9],
+        },
+
+      ],
+    };
+  }
+
+  function generateChartData(projectDB) {
+
+    var biggest = [0,0,0,0,0,0]
+    var biggestNames = ["","","","","",""]
+    var Sum = 0;
+    for ( var element in projectDB )
+    {
+      var minElement = biggest[0]
+      var minElementIndex = 0
+      biggest.forEach((m,i) => {
+        if (m < minElement)
+        {
+          minElement = m;
+          minElementIndex = i;
+        }
+      })
+
+      if (projectDB[element]['ts'] > minElement)
+      {
+        if (element != 'others')
+        {
+          biggest[minElementIndex] = projectDB[element]['ts'];
+          biggestNames[minElementIndex] = displayNiceTitle(element);
+        }
+      }
+
+      Sum += projectDB[element]['ts'];
+      
+    }
+
+    return {
+      labels: biggestNames,
+      datasets: [
+        {
+          //label: 'Dataset 1',
+          data: biggest,
+          backgroundColor: '#E68AC5',
+        },
+      ],
+    };
+  }
+
+  function generatePieData(projectDatabase, index, latestDate) {
+
+    var xAxis = [1,2,3,4,5,6,7];
+    var yAxis = [1,2,3,4,5,6,7,8,9,10];
+
+    if (index === 1)
+    {
+      //Total Volume Exchanged Today
+      var limit = [0,0,0,0,0,0,0,0,0,0]
+      var limitNames = ["","","","","","","","","","",]
+      var sum = 0;
+      for (element in projectDatabase)
+      {
+        sum += isNaN(projectDatabase[element][latestDate]) ? 0 : projectDatabase[element][latestDate]
+
+        var minLimit = limit[0];
+        var minLimitIndex = 0;
+        limit.forEach((e,i) => {
+          if (e < minLimit)
+          {
+            minLimit = e;
+            minLimitIndex = i;
+          }
+        })
+
+        if (projectDatabase[element][latestDate] > minLimit)
+        {
+          if (element != 'others')
+          {
+            limit[minLimitIndex] = projectDatabase[element][latestDate];
+            limitNames[minLimitIndex] = displayNiceTitle(element);
+          }
+        }
+      }
+
+      limit.forEach(e => {
+        sum -= e
+      })
+      //console.log(sum);
+      limit.push(sum)
+      limitNames.push("Others")
+
+      xAxis = limitNames;
+      yAxis = limit;
+    }
+
+    if (index === 2)
+    {
+      // 90 Day Monthly Volume
+      var limit = [0,0,0,0,0,0,0,0,0,0]
+      var limitNames = ["","","","","","","","","","",]
+      var sum = 0;
+      for (element in projectDatabase)
+      {
+        sum += projectDatabase[element]['ts']
+
+        var minLimit = limit[0];
+        var minLimitIndex = 0;
+        limit.forEach((e,i) => {
+          if (e < minLimit)
+          {
+            minLimit = e;
+            minLimitIndex = i;
+          }
+        })
+
+        if (projectDatabase[element]['ts'] > minLimit)
+        {
+          if (element != 'others')
+          {
+            limit[minLimitIndex] = projectDatabase[element]['ts'];
+            limitNames[minLimitIndex] = displayNiceTitle(element);
+          }
+        }
+      }
+
+      limit.forEach(e => {
+        sum -= e;
+      })
+
+      limit.push(sum)
+      limitNames.push("Others")
+
+      xAxis = limitNames;
+      yAxis = limit;
+    }
+
+    if (index === 3)
+    {
+      // Number of NFTs Traded
+      var limit = [0,0,0,0,0,0,0,0,0,0]
+      var limitNames = ["","","","","","","","","","",]
+      var sum = 0;
+      for (element in projectDatabase)
+      {
+        sum += projectDatabase[element]['tc']
+
+        var minLimit = limit[0];
+        var minLimitIndex = 0;
+        limit.forEach((e,i) => {
+          if (e < minLimit)
+          {
+            minLimit = e;
+            minLimitIndex = i;
+          }
+        })
+
+        if (projectDatabase[element]['tc'] > minLimit)
+        {
+          if (element != 'others')
+          {
+            limit[minLimitIndex] = projectDatabase[element]['tc'];
+            limitNames[minLimitIndex] = displayNiceTitle(element);
+          }
+        }
+      }
+
+      limit.forEach(e => {
+        sum -= e;
+      })
+
+      limit.push(sum)
+      limitNames.push("Others")
+
+      xAxis = limitNames;
+      yAxis = limit;
+    }
+
+    return {
+      labels: xAxis,
+      datasets: [
+        {
+          label: 'Dataset 1',
+          data: yAxis,
+          backgroundColor: '#E68AC5',
+        },
+      ],
+    };
+  }
+}
 
 function PermanentDrawerLeft() {
   const [page, setPage] = useState(0);
@@ -335,11 +1766,11 @@ function PermanentDrawerLeft() {
               </ListItemIcon>
               <ListItemText primary={'Solanart'} />
             </ListItem>
-            <ListItem button key={'Your Next Project'} onClick={() => setPage(4)}>
+            <ListItem button key={'The Next Project'} onClick={() => setPage(4)}>
               <ListItemIcon>
               <Image src='/opensea.png' height={24} width={24} />
               </ListItemIcon>
-              <ListItemText primary={'Your Next Project'} />
+              <ListItemText primary={'The Next Project'} />
             </ListItem>
         </List>
         <Divider />
