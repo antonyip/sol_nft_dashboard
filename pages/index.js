@@ -75,7 +75,7 @@ function AboutPage()
       <p>Bounty Description - <a target="_blank" rel="noreferrer" href='https://flipsidecrypto.xyz/drops/3adspO7EM1pL89AKI5hbTD'>https://flipsidecrypto.xyz/drops/3adspO7EM1pL89AKI5hbTD</a></p>
       <p>This dashboard shows the Sales of the NFT projects on the various Solana NFT Marketplaces. Feel free to explore the data!</p>
       
-      <a target="_blank" rel="noreferrer" href='https://flipsidecrypto.xyz'><Image alt="" height={40} src="/powered.png"></Image></a>
+      <a target="_blank" rel="noreferrer" href='https://flipsidecrypto.xyz'><Image alt="" height={40} width={264} src="/powered.png"></Image></a>
     </CardContent>
     </Card></div>);
 }
