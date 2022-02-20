@@ -475,7 +475,6 @@ function MagicEdenPage()
           data: dataa[9],
           backgroundColor: colors[9],
         },
-
       ],
     };
   }
@@ -510,13 +509,26 @@ function MagicEdenPage()
       
     }
 
+    var colors = [
+      '#BEE5EB',
+      '#CA7CE6',
+      '#66D4E6',
+      '#E6914E',
+      '#B9E65A',
+      '#5DEB4D',
+      '#B8CBE6',
+      '#A7E6A0',
+      '#E68AC5',
+      '#E6CA95',
+    ]
     return {
       labels: biggestNames,
       datasets: [
         {
           //label: 'Dataset 1',
           data: biggest,
-          backgroundColor: '#E68AC5',
+          //backgroundColor: '#E68AC5',
+          backgroundColor: colors
         },
       ],
     };
@@ -650,13 +662,26 @@ function MagicEdenPage()
       yAxis = limit;
     }
 
+    var colors = [
+      '#BEE5EB',
+      '#CA7CE6',
+      '#66D4E6',
+      '#E6914E',
+      '#B9E65A',
+      '#5DEB4D',
+      '#B8CBE6',
+      '#A7E6A0',
+      '#E68AC5',
+      '#E6CA95',
+    ]
+
     return {
       labels: xAxis,
       datasets: [
         {
           label: 'Dataset 1',
           data: yAxis,
-          backgroundColor: '#E68AC5',
+          backgroundColor: colors,
         },
       ],
     };
@@ -1047,14 +1072,25 @@ function SolSeaPage()
       Sum += projectDB[element]['ts'];
       
     }
-
+    var colors = [
+      '#BEE5EB',
+      '#CA7CE6',
+      '#66D4E6',
+      '#E6914E',
+      '#B9E65A',
+      '#5DEB4D',
+      '#B8CBE6',
+      '#A7E6A0',
+      '#E68AC5',
+      '#E6CA95',
+    ]
     return {
       labels: biggestNames,
       datasets: [
         {
           //label: 'Dataset 1',
           data: biggest,
-          backgroundColor: '#E68AC5',
+          backgroundColor: colors,
         },
       ],
     };
@@ -1187,14 +1223,25 @@ function SolSeaPage()
       xAxis = limitNames;
       yAxis = limit;
     }
-
+    var colors = [
+      '#BEE5EB',
+      '#CA7CE6',
+      '#66D4E6',
+      '#E6914E',
+      '#B9E65A',
+      '#5DEB4D',
+      '#B8CBE6',
+      '#A7E6A0',
+      '#E68AC5',
+      '#E6CA95',
+    ]
     return {
       labels: xAxis,
       datasets: [
         {
           label: 'Dataset 1',
           data: yAxis,
-          backgroundColor: '#E68AC5',
+          backgroundColor: colors,
         },
       ],
     };
@@ -1582,14 +1629,25 @@ function SolartPage()
       Sum += projectDB[element]['ts'];
       
     }
-
+    var colors = [
+      '#BEE5EB',
+      '#CA7CE6',
+      '#66D4E6',
+      '#E6914E',
+      '#B9E65A',
+      '#5DEB4D',
+      '#B8CBE6',
+      '#A7E6A0',
+      '#E68AC5',
+      '#E6CA95',
+    ]
     return {
       labels: biggestNames,
       datasets: [
         {
           //label: 'Dataset 1',
           data: biggest,
-          backgroundColor: '#E68AC5',
+          backgroundColor: colors,
         },
       ],
     };
@@ -1722,14 +1780,25 @@ function SolartPage()
       xAxis = limitNames;
       yAxis = limit;
     }
-
+    var colors = [
+      '#BEE5EB',
+      '#CA7CE6',
+      '#66D4E6',
+      '#E6914E',
+      '#B9E65A',
+      '#5DEB4D',
+      '#B8CBE6',
+      '#A7E6A0',
+      '#E68AC5',
+      '#E6CA95',
+    ]
     return {
       labels: xAxis,
       datasets: [
         {
           label: 'Dataset 1',
           data: yAxis,
-          backgroundColor: '#E68AC5',
+          backgroundColor: colors,
         },
       ],
     };
