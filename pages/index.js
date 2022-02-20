@@ -72,10 +72,10 @@ function AboutPage()
 {
   return (<div><Card><CardHeader title="Solana NFT Dashboard"></CardHeader>
     <CardContent>
-      <p>Bounty Description - <a target="_blank" href='https://flipsidecrypto.xyz/drops/3adspO7EM1pL89AKI5hbTD'>https://flipsidecrypto.xyz/drops/3adspO7EM1pL89AKI5hbTD</a></p>
+      <p>Bounty Description - <a target="_blank" rel="noreferrer" href='https://flipsidecrypto.xyz/drops/3adspO7EM1pL89AKI5hbTD'>https://flipsidecrypto.xyz/drops/3adspO7EM1pL89AKI5hbTD</a></p>
       <p>This dashboard shows the Sales of the NFT projects on the various Solana NFT Marketplaces. Feel free to explore the data!</p>
       
-      <a target="_blank" href='https://flipsidecrypto.xyz'><img src="/powered.png"></img></a>
+      <a target="_blank" rel="noreferrer" href='https://flipsidecrypto.xyz'><Image alt="" height={40} src="/powered.png"></Image></a>
     </CardContent>
     </Card></div>);
 }
@@ -1781,25 +1781,25 @@ function PermanentDrawerLeft() {
         <List>
             <ListItem button key={'MagicEden'} onClick={() => setPage(1)}>
               <ListItemIcon>
-                <Image src='/meLogo.png' height={24} width={24} />
+                <Image alt="" src='/meLogo.png' height={24} width={24} />
               </ListItemIcon>
               <ListItemText primary={'MagicEden'} />
             </ListItem>
             <ListItem button key={'SolSea'} onClick={() => setPage(2)}>
               <ListItemIcon>
-              <Image src='/solsea.jpg' height={24} width={24} />
+              <Image alt="" src='/solsea.jpg' height={24} width={24} />
               </ListItemIcon>
               <ListItemText primary={'SolSea'} />
             </ListItem>
             <ListItem button key={'Solanart'} onClick={() => setPage(3)}>
               <ListItemIcon>
-              <Image src='/solanart.jpeg' height={24} width={24} />
+              <Image alt="" src='/solanart.jpeg' height={24} width={24} />
               </ListItemIcon>
               <ListItemText primary={'Solanart'} />
             </ListItem>
             <ListItem button key={'The Next Project'} onClick={() => setPage(4)}>
               <ListItemIcon>
-              <Image src='/opensea.png' height={24} width={24} />
+              <Image alt="" src='/opensea.png' height={24} width={24} />
               </ListItemIcon>
               <ListItemText primary={'The Next Project'} />
             </ListItem>
