@@ -60,6 +60,7 @@ var colors = [
   '#87c690',
   '#c66Aa5',
   '#c6aA75',
+  '#d6bA85',
 ]
 
 const drawerWidth = 240;
@@ -266,8 +267,6 @@ function MagicEdenPage()
     
   })
 
-  
-
   for (var key in uniqueDate) {
     var minTime = last7DaysSorted_i[0]
     var minTimeIndex = 0;
@@ -352,10 +351,10 @@ function MagicEdenPage()
     { field: 'QUARTLY_COUNT', headerName: '90d Sales (#)', width: 200 },
   ];
 
-  const chartOptions1 = generateChartOptions("Top 10 Daily Projects");
+  const chartOptions1 = generateChartOptions("Daily Sales");
   const chartOptions2 = generatePieOptions("Total Volume Exchanged Today");
   const chartOptions3 = generatePieOptions("90 Day Highest Volume");
-  const chartOptions4 = generateChartOptions("90 Day Volume");
+  const chartOptions4 = generateChartOptions("Best Sellers");
   const chartOptions5 = generatePieOptions("Number of NFTs Traded Over the last 90 days");
 
   var last7DaysSorted = last7DaysSorted_i.sort()
@@ -405,10 +404,12 @@ function MagicEdenPage()
   function generateDailyChartData(projectNames, projectDatabase, last7DaysSorted)
   {
     var dataa = [[],[],[],[],[],[],[],[],[],[]]
+    var others = []
     var datees = [];
     
     last7DaysSorted.forEach((element, index) => {
       datees.push(new Date(element*1000).toISOString().substr(0,10));
+      var negativeSum = 0
       for (let i = 0; i < 10; i++) {
 
         if (projectNames[i] === "") continue;
@@ -419,16 +420,26 @@ function MagicEdenPage()
         if (projectStats[interestedDate] !== undefined)
         {
           dataa[i].push(projectStats[interestedDate]);
+          negativeSum += projectStats[interestedDate]
         }
         else
         {
           dataa[i].push(0);
         }
       }
+
+      var sumAll = 0;
+      for (var key in projectDatabase)
+      {
+        sumAll += isNaN(projectDatabase[key][interestedDate]) ? 0 : projectDatabase[key][interestedDate];
+      }
+      sumAll -= negativeSum
+      others.push(sumAll);
     })
 
-    //console.log(last7DaysSorted)
-    //console.log(dataa)
+    console.log(last7DaysSorted)
+    console.log(dataa)
+    console.log(others);
     return {
       labels: datees,
       datasets: [
@@ -482,6 +493,12 @@ function MagicEdenPage()
           data: dataa[9],
           backgroundColor: colors[9],
         },
+        {
+          label: displayNiceTitle("Others"),
+          data: others,
+          backgroundColor: colors[10],
+        },
+        
       ],
     };
   }
@@ -885,7 +902,7 @@ function SolSeaPage()
   const chartOptions1 = generateChartOptions("Top 10 Daily Projects");
   const chartOptions2 = generatePieOptions("Total Volume Exchanged Today");
   const chartOptions3 = generatePieOptions("90 Day Highest Volume");
-  const chartOptions4 = generateChartOptions("90 Day Volume");
+  const chartOptions4 = generateChartOptions("Best Sellers");
   const chartOptions5 = generatePieOptions("Number of NFTs Traded Over the last 90 days");
 
   var last7DaysSorted = last7DaysSorted_i.sort()
@@ -1414,7 +1431,7 @@ function SolartPage()
   const chartOptions1 = generateChartOptions("Top 10 Daily Projects");
   const chartOptions2 = generatePieOptions("Total Volume Exchanged Today");
   const chartOptions3 = generatePieOptions("90 Day Highest Volume");
-  const chartOptions4 = generateChartOptions("90 Day Volume");
+  const chartOptions4 = generateChartOptions("Best Sellers");
   const chartOptions5 = generatePieOptions("Number of NFTs Traded Over the last 90 days");
 
   var last7DaysSorted = last7DaysSorted_i.sort()
