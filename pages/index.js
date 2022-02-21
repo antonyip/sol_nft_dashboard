@@ -49,6 +49,19 @@ ChartJS.register(
   Legend
 );
 
+var colors = [
+  '#9Ec5cB',
+  '#aA5Cc6',
+  '#46b4c6',
+  '#c6712E',
+  '#99c63A',
+  '#3DcB2D',
+  '#98aBc6',
+  '#87c690',
+  '#c66Aa5',
+  '#c6aA75',
+]
+
 const drawerWidth = 240;
 
 const AppBar = styled(MuiAppBar, {
@@ -368,10 +381,10 @@ function MagicEdenPage()
                 <Item><h2>MagicEden Marketplace</h2></Item>
               </Grid>
               <Grid item xs={6}>
-                <Item><Bar options={chartOptions1} data={chartData1} height={null}/></Item>
+                <Item><Bar options={chartOptions4} data={chartData4} height={null}/></Item>
               </Grid>
               <Grid item xs={6}>
-                <Item><Bar options={chartOptions4} data={chartData4} height={null}/></Item>
+                <Item><Bar options={chartOptions1} data={chartData1} height={null}/></Item>
               </Grid>
               <Grid item xs={4}>
                 <Item><Doughnut options={chartOptions2} data={chartData2} height={null}/></Item>
@@ -393,18 +406,7 @@ function MagicEdenPage()
   {
     var dataa = [[],[],[],[],[],[],[],[],[],[]]
     var datees = [];
-    var colors = [
-      '#BEE5EB',
-      '#CA7CE6',
-      '#66D4E6',
-      '#E6914E',
-      '#B9E65A',
-      '#5DEB4D',
-      '#B8CBE6',
-      '#A7E6A0',
-      '#E68AC5',
-      '#E6CA95',
-    ]
+    
     last7DaysSorted.forEach((element, index) => {
       datees.push(new Date(element*1000).toISOString().substr(0,10));
       for (let i = 0; i < 10; i++) {
@@ -418,9 +420,14 @@ function MagicEdenPage()
         {
           dataa[i].push(projectStats[interestedDate]);
         }
+        else
+        {
+          dataa[i].push(0);
+        }
       }
     })
 
+    //console.log(last7DaysSorted)
     //console.log(dataa)
     return {
       labels: datees,
@@ -509,18 +516,6 @@ function MagicEdenPage()
       
     }
 
-    var colors = [
-      '#BEE5EB',
-      '#CA7CE6',
-      '#66D4E6',
-      '#E6914E',
-      '#B9E65A',
-      '#5DEB4D',
-      '#B8CBE6',
-      '#A7E6A0',
-      '#E68AC5',
-      '#E6CA95',
-    ]
     return {
       labels: biggestNames,
       datasets: [
@@ -661,19 +656,6 @@ function MagicEdenPage()
       xAxis = limitNames;
       yAxis = limit;
     }
-
-    var colors = [
-      '#BEE5EB',
-      '#CA7CE6',
-      '#66D4E6',
-      '#E6914E',
-      '#B9E65A',
-      '#5DEB4D',
-      '#B8CBE6',
-      '#A7E6A0',
-      '#E68AC5',
-      '#E6CA95',
-    ]
 
     return {
       labels: xAxis,
@@ -929,10 +911,10 @@ function SolSeaPage()
                 <Item><h2>SolSea Marketplace</h2></Item>
               </Grid>
               <Grid item xs={6}>
-                <Item><Bar options={chartOptions1} data={chartData1} height={null}/></Item>
+                <Item><Bar options={chartOptions4} data={chartData4} height={null}/></Item>
               </Grid>
               <Grid item xs={6}>
-                <Item><Bar options={chartOptions4} data={chartData4} height={null}/></Item>
+                <Item><Bar options={chartOptions1} data={chartData1} height={null}/></Item>
               </Grid>
               <Grid item xs={4}>
                 <Item><Doughnut options={chartOptions2} data={chartData2} height={null}/></Item>
@@ -954,18 +936,6 @@ function SolSeaPage()
   {
     var dataa = [[],[],[],[],[],[],[],[],[],[]]
     var datees = [];
-    var colors = [
-      '#BEE5EB',
-      '#CA7CE6',
-      '#66D4E6',
-      '#E6914E',
-      '#B9E65A',
-      '#5DEB4D',
-      '#B8CBE6',
-      '#A7E6A0',
-      '#E68AC5',
-      '#E6CA95',
-    ]
     //console.log(projectNames)
     //console.log(last7DaysSorted)
     last7DaysSorted.forEach((element, index) => {
@@ -980,6 +950,10 @@ function SolSeaPage()
         if (projectStats[interestedDate] !== undefined)
         {
           dataa[i].push(projectStats[interestedDate]);
+        }
+        else
+        {
+          dataa[i].push(0);
         }
       }
     })
@@ -1072,18 +1046,7 @@ function SolSeaPage()
       Sum += projectDB[element]['ts'];
       
     }
-    var colors = [
-      '#BEE5EB',
-      '#CA7CE6',
-      '#66D4E6',
-      '#E6914E',
-      '#B9E65A',
-      '#5DEB4D',
-      '#B8CBE6',
-      '#A7E6A0',
-      '#E68AC5',
-      '#E6CA95',
-    ]
+
     return {
       labels: biggestNames,
       datasets: [
@@ -1223,18 +1186,7 @@ function SolSeaPage()
       xAxis = limitNames;
       yAxis = limit;
     }
-    var colors = [
-      '#BEE5EB',
-      '#CA7CE6',
-      '#66D4E6',
-      '#E6914E',
-      '#B9E65A',
-      '#5DEB4D',
-      '#B8CBE6',
-      '#A7E6A0',
-      '#E68AC5',
-      '#E6CA95',
-    ]
+
     return {
       labels: xAxis,
       datasets: [
@@ -1488,10 +1440,10 @@ function SolartPage()
                 <Item><h2>Solanart Marketplace</h2></Item>
               </Grid>
               <Grid item xs={6}>
-                <Item><Bar options={chartOptions1} data={chartData1} height={null}/></Item>
+                <Item><Bar options={chartOptions4} data={chartData4} height={null}/></Item>
               </Grid>
               <Grid item xs={6}>
-                <Item><Bar options={chartOptions4} data={chartData4} height={null}/></Item>
+                <Item><Bar options={chartOptions1} data={chartData1} height={null}/></Item>
               </Grid>
               <Grid item xs={4}>
                 <Item><Doughnut options={chartOptions2} data={chartData2} height={null}/></Item>
@@ -1513,18 +1465,7 @@ function SolartPage()
   {
     var dataa = [[],[],[],[],[],[],[],[],[],[]]
     var datees = [];
-    var colors = [
-      '#BEE5EB',
-      '#CA7CE6',
-      '#66D4E6',
-      '#E6914E',
-      '#B9E65A',
-      '#5DEB4D',
-      '#B8CBE6',
-      '#A7E6A0',
-      '#E68AC5',
-      '#E6CA95',
-    ]
+
     last7DaysSorted.forEach((element, index) => {
       datees.push(new Date(element*1000).toISOString().substr(0,10));
       for (let i = 0; i < 10; i++) {
@@ -1538,9 +1479,14 @@ function SolartPage()
         {
           dataa[i].push(projectStats[interestedDate]);
         }
+        else
+        {
+          dataa[i].push(0);
+        }
       }
     })
 
+    //console.log(last7DaysSorted)
     //console.log(dataa)
     return {
       labels: datees,
@@ -1629,18 +1575,7 @@ function SolartPage()
       Sum += projectDB[element]['ts'];
       
     }
-    var colors = [
-      '#BEE5EB',
-      '#CA7CE6',
-      '#66D4E6',
-      '#E6914E',
-      '#B9E65A',
-      '#5DEB4D',
-      '#B8CBE6',
-      '#A7E6A0',
-      '#E68AC5',
-      '#E6CA95',
-    ]
+
     return {
       labels: biggestNames,
       datasets: [
@@ -1780,18 +1715,7 @@ function SolartPage()
       xAxis = limitNames;
       yAxis = limit;
     }
-    var colors = [
-      '#BEE5EB',
-      '#CA7CE6',
-      '#66D4E6',
-      '#E6914E',
-      '#B9E65A',
-      '#5DEB4D',
-      '#B8CBE6',
-      '#A7E6A0',
-      '#E68AC5',
-      '#E6CA95',
-    ]
+
     return {
       labels: xAxis,
       datasets: [
