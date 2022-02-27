@@ -299,7 +299,8 @@ function MagicEdenPage()
 
 
   //console.log(latestDate);
-  console.log(projectDatabase);
+  //console.log(last7DaysSorted_i);
+  //console.log(projectDatabase);
 
   var dailyRows = []
   var minValues = [0,0,0,0,0,0,0,0,0,0];
@@ -386,22 +387,22 @@ function MagicEdenPage()
 
   return (<div style={{ height: 600, width: '100%' }}>
             <Grid container spacing={2}>
-              <Grid item xs={12}>
+              <Grid item md={12}>
                 <Item><h2>MagicEden Marketplace</h2></Item>
               </Grid>
-              <Grid item xs={6}>
+              <Grid item md={6}>
                 <Item><Bar options={chartOptions4} data={chartData4} height={null}/></Item>
               </Grid>
-              <Grid item xs={6}>
+              <Grid item md={6}>
                 <Item><Bar options={chartOptions1} data={chartData1} height={null}/></Item>
               </Grid>
-              <Grid item xs={4}>
+              <Grid item md={4}>
                 <Item><Doughnut options={chartOptions2} data={chartData2} height={null}/></Item>
               </Grid>
-              <Grid item xs={4}>
+              <Grid item md={4}>
                 <Item><Doughnut options={chartOptions3} data={chartData3} height={null}/></Item>
               </Grid>
-              <Grid item xs={4}>
+              <Grid item md={4}>
                 <Item><Doughnut options={chartOptions5} data={chartData5} height={null}/></Item>
               </Grid>
           </Grid>
@@ -447,9 +448,9 @@ function MagicEdenPage()
       others.push(sumAll);
     })
 
-    console.log(last7DaysSorted)
-    console.log(dataa)
-    console.log(others);
+    //console.log(last7DaysSorted)
+    //console.log(dataa)
+    //console.log(others);
     return {
       labels: datees,
       datasets: [
@@ -845,9 +846,9 @@ function SolSeaPage()
 
 
 
-  console.log(latestDate);
-  console.log(uniqueDate);
-  console.log(projectDatabase);
+  //console.log(latestDate);
+  //console.log(uniqueDate);
+  //console.log(projectDatabase);
 
   var dailyRows = []
   var minValues = [0,0,0,0,0,0,0,0,0,0];
@@ -909,7 +910,7 @@ function SolSeaPage()
     { field: 'QUARTLY_COUNT', headerName: '90d Sales (#)', width: 200 },
   ];
 
-  const chartOptions1 = generateChartOptions("Top 10 Daily Projects");
+  const chartOptions1 = generateChartOptions("Daily Sales");
   const chartOptions2 = generatePieOptions("Total Volume Exchanged Today");
   const chartOptions3 = generatePieOptions("90 Day Highest Volume");
   const chartOptions4 = generateChartOptions("Best Sellers");
@@ -934,22 +935,22 @@ function SolSeaPage()
 
   return (<div style={{ height: 600, width: '100%' }}>
             <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid item md={12}>
                 <Item><h2>SolSea Marketplace</h2></Item>
               </Grid>
-              <Grid item xs={6}>
+              <Grid item md={6}>
                 <Item><Bar options={chartOptions4} data={chartData4} height={null}/></Item>
               </Grid>
-              <Grid item xs={6}>
+              <Grid item md={6}>
                 <Item><Bar options={chartOptions1} data={chartData1} height={null}/></Item>
               </Grid>
-              <Grid item xs={4}>
+              <Grid item md={4}>
                 <Item><Doughnut options={chartOptions2} data={chartData2} height={null}/></Item>
               </Grid>
-              <Grid item xs={4}>
+              <Grid item md={4}>
                 <Item><Doughnut options={chartOptions3} data={chartData3} height={null}/></Item>
               </Grid>
-              <Grid item xs={4}>
+              <Grid item md={4}>
                 <Item><Doughnut options={chartOptions5} data={chartData5} height={null}/></Item>
               </Grid>
           </Grid>
@@ -959,90 +960,107 @@ function SolSeaPage()
     );
 
 
-  function generateDailyChartData(projectNames, projectDatabase, last7DaysSorted)
-  {
-    var dataa = [[],[],[],[],[],[],[],[],[],[]]
-    var datees = [];
-    //console.log(projectNames)
-    //console.log(last7DaysSorted)
-    last7DaysSorted.forEach((element, index) => {
-      datees.push(new Date(element*1000).toISOString().substr(0,10));
-      for (let i = 0; i < 10; i++) {
-
-        if (projectNames[i] === "") continue;
-
-        const interestedDate = last7DaysSorted[index]*1000;
-        const projectStats = projectDatabase[projectNames[i]];
-
-        if (projectStats[interestedDate] !== undefined)
-        {
-          dataa[i].push(projectStats[interestedDate]);
+    function generateDailyChartData(projectNames, projectDatabase, last7DaysSorted)
+    {
+      var dataa = [[],[],[],[],[],[],[],[],[],[]]
+      var others = []
+      var datees = [];
+      
+      last7DaysSorted.forEach((element, index) => {
+        datees.push(new Date(element*1000).toISOString().substr(0,10));
+        var negativeSum = 0
+        for (let i = 0; i < 10; i++) {
+  
+          if (projectNames[i] === "") continue;
+  
+          const interestedDate = last7DaysSorted[index]*1000;
+          const projectStats = projectDatabase[projectNames[i]];
+  
+          if (projectStats[interestedDate] !== undefined)
+          {
+            dataa[i].push(projectStats[interestedDate]);
+            negativeSum += projectStats[interestedDate]
+          }
+          else
+          {
+            dataa[i].push(0);
+          }
         }
-        else
+  
+        var sumAll = 0;
+        for (var key in projectDatabase)
         {
-          dataa[i].push(0);
+          sumAll += isNaN(projectDatabase[key][interestedDate]) ? 0 : projectDatabase[key][interestedDate];
         }
-      }
-    })
-
-    console.log(dataa)
-    return {
-      labels: datees,
-      datasets: [
-        {
-          label: displayNiceTitle(projectNames[0]),
-          data: dataa[0],
-          backgroundColor: colors[0],
-        },
-        {
-          label: displayNiceTitle(projectNames[1]),
-          data: dataa[1],
-          backgroundColor: colors[1],
-        },
-        {
-          label: displayNiceTitle(projectNames[2]),
-          data: dataa[2],
-          backgroundColor: colors[2],
-        },
-        {
-          label: displayNiceTitle(projectNames[3]),
-          data: dataa[3],
-          backgroundColor: colors[3],
-        },
-        {
-          label: displayNiceTitle(projectNames[4]),
-          data: dataa[4],
-          backgroundColor: colors[4],
-        },
-        {
-          label: displayNiceTitle(projectNames[5]),
-          data: dataa[5],
-          backgroundColor: colors[5],
-        },
-        {
-          label: displayNiceTitle(projectNames[6]),
-          data: dataa[6],
-          backgroundColor: colors[6],
-        },
-        {
-          label: displayNiceTitle(projectNames[7]),
-          data: dataa[7],
-          backgroundColor: colors[7],
-        },
-        {
-          label: displayNiceTitle(projectNames[8]),
-          data: dataa[8],
-          backgroundColor: colors[8],
-        },
-        {
-          label: displayNiceTitle(projectNames[9]),
-          data: dataa[9],
-          backgroundColor: colors[9],
-        },
-
-      ],
-    };
-  }
+        sumAll -= negativeSum
+        others.push(sumAll);
+      })
+  
+      //console.log(last7DaysSorted)
+      //console.log(dataa)
+      //console.log(others);
+      return {
+        labels: datees,
+        datasets: [
+          {
+            label: displayNiceTitle(projectNames[0]),
+            data: dataa[0],
+            backgroundColor: colors[0],
+          },
+          {
+            label: displayNiceTitle(projectNames[1]),
+            data: dataa[1],
+            backgroundColor: colors[1],
+          },
+          {
+            label: displayNiceTitle(projectNames[2]),
+            data: dataa[2],
+            backgroundColor: colors[2],
+          },
+          {
+            label: displayNiceTitle(projectNames[3]),
+            data: dataa[3],
+            backgroundColor: colors[3],
+          },
+          {
+            label: displayNiceTitle(projectNames[4]),
+            data: dataa[4],
+            backgroundColor: colors[4],
+          },
+          {
+            label: displayNiceTitle(projectNames[5]),
+            data: dataa[5],
+            backgroundColor: colors[5],
+          },
+          {
+            label: displayNiceTitle(projectNames[6]),
+            data: dataa[6],
+            backgroundColor: colors[6],
+          },
+          {
+            label: displayNiceTitle(projectNames[7]),
+            data: dataa[7],
+            backgroundColor: colors[7],
+          },
+          {
+            label: displayNiceTitle(projectNames[8]),
+            data: dataa[8],
+            backgroundColor: colors[8],
+          },
+          {
+            label: displayNiceTitle(projectNames[9]),
+            data: dataa[9],
+            backgroundColor: colors[9],
+          },
+          {
+            label: displayNiceTitle("Others"),
+            data: others,
+            backgroundColor: colors[10],
+          },
+          
+        ],
+      };
+    }
 
   function generateChartData(projectDB) {
 
@@ -1376,7 +1394,7 @@ function SolartPage()
 
 
   //console.log(latestDate);
-  console.log(projectDatabase);
+  //console.log(projectDatabase);
 
   var dailyRows = []
   var minValues = [0,0,0,0,0,0,0,0,0,0];
@@ -1438,7 +1456,7 @@ function SolartPage()
     { field: 'QUARTLY_COUNT', headerName: '90d Sales (#)', width: 200 },
   ];
 
-  const chartOptions1 = generateChartOptions("Top 10 Daily Projects");
+  const chartOptions1 = generateChartOptions("Daily Sales");
   const chartOptions2 = generatePieOptions("Total Volume Exchanged Today");
   const chartOptions3 = generatePieOptions("90 Day Highest Volume");
   const chartOptions4 = generateChartOptions("Best Sellers");
@@ -1463,22 +1481,22 @@ function SolartPage()
 
   return (<div style={{ height: 600, width: '100%' }}>
             <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid item md={12}>
                 <Item><h2>Solanart Marketplace</h2></Item>
               </Grid>
-              <Grid item xs={6}>
+              <Grid item md={6}>
                 <Item><Bar options={chartOptions4} data={chartData4} height={null}/></Item>
               </Grid>
-              <Grid item xs={6}>
+              <Grid item md={6}>
                 <Item><Bar options={chartOptions1} data={chartData1} height={null}/></Item>
               </Grid>
-              <Grid item xs={4}>
+              <Grid item md={4}>
                 <Item><Doughnut options={chartOptions2} data={chartData2} height={null}/></Item>
               </Grid>
-              <Grid item xs={4}>
+              <Grid item md={4}>
                 <Item><Doughnut options={chartOptions3} data={chartData3} height={null}/></Item>
               </Grid>
-              <Grid item xs={4}>
+              <Grid item md={4}>
                 <Item><Doughnut options={chartOptions5} data={chartData5} height={null}/></Item>
               </Grid>
           </Grid>
@@ -1488,13 +1506,15 @@ function SolartPage()
     );
 
 
-  function generateDailyChartData(projectNames, projectDatabase, last7DaysSorted)
+    function generateDailyChartData(projectNames, projectDatabase, last7DaysSorted)
   {
     var dataa = [[],[],[],[],[],[],[],[],[],[]]
+    var others = []
     var datees = [];
-
+    
     last7DaysSorted.forEach((element, index) => {
       datees.push(new Date(element*1000).toISOString().substr(0,10));
+      var negativeSum = 0
       for (let i = 0; i < 10; i++) {
 
         if (projectNames[i] === "") continue;
@@ -1505,16 +1525,26 @@ function SolartPage()
         if (projectStats[interestedDate] !== undefined)
         {
           dataa[i].push(projectStats[interestedDate]);
+          negativeSum += projectStats[interestedDate]
         }
         else
         {
           dataa[i].push(0);
         }
       }
+
+      var sumAll = 0;
+      for (var key in projectDatabase)
+      {
+        sumAll += isNaN(projectDatabase[key][interestedDate]) ? 0 : projectDatabase[key][interestedDate];
+      }
+      sumAll -= negativeSum
+      others.push(sumAll);
     })
 
     //console.log(last7DaysSorted)
     //console.log(dataa)
+    //console.log(others);
     return {
       labels: datees,
       datasets: [
@@ -1568,7 +1598,12 @@ function SolartPage()
           data: dataa[9],
           backgroundColor: colors[9],
         },
-
+        {
+          label: displayNiceTitle("Others"),
+          data: others,
+          backgroundColor: colors[10],
+        },
+        
       ],
     };
   }
